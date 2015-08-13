@@ -1,0 +1,35 @@
+<configuration>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+  
+    <encoder>
+      <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+    
+  </appender>
+
+  <appender name="PRINTER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+  
+    <file>alarmtilt_soap.log</file>
+    
+    <append>true</append>    
+  
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>alarmtilt_soap.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <!-- keep 60 days' worth of history -->
+      <maxHistory>60</maxHistory>
+    </rollingPolicy>
+      
+    <encoder>
+      <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+
+  </appender>
+    
+  <root level="debug">
+    <appender-ref ref="PRINTER" />
+    <appender-ref ref="STDOUT" />
+  </root>
+  
+</configuration>
