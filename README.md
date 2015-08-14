@@ -75,3 +75,4 @@ java.exe
 + There is no script to run the JUnit Runner. Would be nice.
 + Not all execution paths have been tested, for sure.
 + Needs to be further tested on Windows, but I expect not many surprises.
++ JUL-to-SLF4J bridge is still missing: http://www.slf4j.org/api/org/slf4j/bridge/SLF4JBridgeHandler.html
