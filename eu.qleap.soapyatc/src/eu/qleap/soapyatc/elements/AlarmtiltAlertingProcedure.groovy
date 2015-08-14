@@ -1,7 +1,5 @@
 package eu.qleap.soapyatc.elements
 
-import org.slf4j.Logger;
-
 import static name.heavycarbon.checks.BasicChecks.*
 import name.heavycarbon.carpetbag.AbstractName
 
@@ -24,27 +22,8 @@ import org.slf4j.LoggerFactory
 
 final class AtpName extends AbstractName {
 
-	final static CLASS = AtpName.class.name
-	final static Logger LOGGER_makeName = LoggerFactory.getLogger("${CLASS}.makeName")
-
 	AtpName(String x) {
 		super(x)
-	}
-
-	/**
-	 * Make an AtpName. Always throws if null passed. Throws if not found.
-	 */
-
-	static AtpName makeName(String name) {
-		Logger logger = LOGGER_makeName
-		checkNotNull(name)
-		AtpDesc res = AtpMap.lookup(name,false,false)
-		if (!res) {
-			instaFail("Could not transform the string '${name}' into an ${AtpName.class.getName()}")
-		}
-		else {
-			return res.name
-		}
 	}
 }
 
@@ -96,9 +75,17 @@ class AtpMap {
 		map = tmpMap.asImmutable()
 	}
 
+	/**
+	 * Unreachable constructor
+	 */
+
 	private AtpMap() {
 		cannotHappen("Class cannot be instantiated");
 	}
+
+	/**
+	 * Printing to list for "--help" output
+	 */
 
 	static List printOut() {
 		List res = []
@@ -109,7 +96,34 @@ class AtpMap {
 	}
 
 	/**
-	 * Lookup; Always throws if null is passed
+	 * Getting the "raw name" (which is sent to AlarmTILT) corresponding to a name
+	 * Throws if not possible.
+	 */
+
+	static String getRawName(AtpName x) {
+		checkNotNull(x,'name')
+		AtpDesc d = map[x]
+		checkNotNull(d,'No descriptor corresponding to the passed name \'{}\'',x)
+		return d.rawName
+	}
+
+	/**
+	 * Making a name from a string (if possible). If not possible, throws
+	 */
+
+	static AtpName makeName(String x) {
+		checkNotNull(x,'name')
+		AtpDesc d = lookup(x, false, false)
+		if (!d) {
+			instaFail("Could not transform the string '${x}' into an ${AtpName.class.getName()}")
+		}
+		else {
+			return d.name
+		}
+	}
+
+	/**
+	 * Lookup; Always throws if null is passed, but the other cases can be controlled
 	 */
 
 	static AtpDesc lookup(String x, boolean throwIfNotFound, boolean throwIfBadName) {
@@ -131,6 +145,10 @@ class AtpMap {
 		}
 		return res
 	}
+
+	/**
+	 * Lookup; Always throws if there is a problem
+	 */
 
 	static AtpDesc lookup(String x) {
 		return lookup(x,true,true)

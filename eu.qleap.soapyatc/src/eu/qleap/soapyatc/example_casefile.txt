@@ -1,0 +1,15 @@
+# Map the numeric cases from WinCC to the names of AlarmTILT procedures to launch
+# If there is a new numeric case in WinCC, nothing needs to be changed in WinCC
+# or in the procedure that call the AlarmTILT SOAP client. Just add the mapping here.
+# However (unfortunately), new procedures outside of the set given below need
+# modifiction of the AlarmTILT client as the procedure names are basically enums.
+# This would need some change.
+
+# ***************
+# Note: This file is not used; instead pass --casefile=... on the the command line! 
+# ***************
+
+1103 => foo
+1108 => bar
+1303 => baz
+1203 => quux

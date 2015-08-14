@@ -1,5 +1,14 @@
+<!-- This is the default resource read by logback; it is generally not used; instead -->
+<!-- we configure the logback.xml via the command line using -Dlogback.configurationFile=/home/quux/logback.xml -->
+
 <configuration>
 
+  <!-- Inject a JVM shutdown hook for a clean shutdown! -->
+  
+  <shutdownHook/>
+
+  <!-- Use "STDOUT" appender if you want to write to STDOUT -->
+  
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
   
     <encoder>
@@ -8,17 +17,21 @@
     
   </appender>
 
-  <appender name="PRINTER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+  <!-- Use "LOGFILE" appender (which rolls the logfiles automatically) if you want to write to a logfile -->
+
+  <appender name="LOGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
   
-    <file>alarmtilt_soap.log</file>
+    <!-- Make this an absolute path; if relative, not sure where it goes -->
+    
+    <file>/home/hobbes/logs/alarmtilt_soap_client.log</file>
     
     <append>true</append>    
   
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <!-- daily rollover -->
-      <fileNamePattern>alarmtilt_soap.%d{yyyy-MM-dd}.log</fileNamePattern>
-      <!-- keep 60 days' worth of history -->
-      <maxHistory>60</maxHistory>
+      <fileNamePattern>alarmtilt_soap_client.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <!-- keep 90 days' worth of history -->
+      <maxHistory>90</maxHistory>
     </rollingPolicy>
       
     <encoder>
@@ -27,9 +40,16 @@
 
   </appender>
     
+    
+  <!-- Here we specify at which level and where to log in the logging hierarchy -->
+  <!-- The logging hierarchy generally corresponds to the class hierarchy, with the method name the last component -->
+  <!-- See http://logback.qos.ch/manual/configuration.html -->
+  
   <root level="debug">
-    <appender-ref ref="PRINTER" />
+    <appender-ref ref="LOGFILE" />
     <appender-ref ref="STDOUT" />
   </root>
+    
+  <logger name="foo.bar" level="INFO" />
   
 </configuration>

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 
 import eu.qleap.soapyatc.elements.AtpMap
 import eu.qleap.soapyatc.elements.AtpName
+import eu.qleap.soapyatc.elements.AtwsMap;
 import eu.qleap.soapyatc.elements.AtwsName
 
 class JUnit_Elements {
@@ -16,20 +17,20 @@ class JUnit_Elements {
 
 	@Test
 	void testMakeWebServiceName() {
-		assertNotNull AtwsName.makeName('  piNG ')
-		assertNotNull AtwsName.makeName('ping')
-		assertNotNull AtwsName.makeName('launch')
-		shouldFail CheckFailedException, { AtwsName.makeName('XXXX') }
-		shouldFail CheckFailedException, { AtwsName.makeName('') }
-		shouldFail CheckFailedException, { AtwsName.makeName(null) }
+		assertNotNull AtwsMap.makeName('  piNG ')
+		assertNotNull AtwsMap.makeName('ping')
+		assertNotNull AtwsMap.makeName('launch')
+		shouldFail CheckFailedException, { AtwsMap.makeName('XXXX') }
+		shouldFail CheckFailedException, { AtwsMap.makeName('') }
+		shouldFail CheckFailedException, { AtwsMap.makeName(null) }
 	}
 
 	@Test
 	void testMakeAlarmtiltProcedureName() {
-		assertNotNull AtpName.makeName('cargolux')
-		shouldFail CheckFailedException, { AtpName.makeName('XXXX') }
-		shouldFail CheckFailedException, { AtpName.makeName('') }
-		shouldFail CheckFailedException, { AtpName.makeName(null) }
+		assertNotNull AtpMap.makeName('cargolux')
+		shouldFail CheckFailedException, { AtpMap.makeName('XXXX') }
+		shouldFail CheckFailedException, { AtpMap.makeName('') }
+		shouldFail CheckFailedException, { AtpMap.makeName(null) }
 	}
 
 	@Test

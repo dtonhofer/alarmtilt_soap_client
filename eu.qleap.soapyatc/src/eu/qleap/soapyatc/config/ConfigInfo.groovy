@@ -1,6 +1,8 @@
 package eu.qleap.soapyatc.config
 
 import static name.heavycarbon.checks.BasicChecks.*
+import name.heavycarbon.carpetbag.ResourceHelpGroovy;
+import eu.qleap.soapyatc.Call;
 import eu.qleap.soapyatc.elements.AtpName
 import eu.qleap.soapyatc.elements.AtwsMap
 import eu.qleap.soapyatc.elements.AtwsName
@@ -16,17 +18,20 @@ import eu.qleap.soapyatc.elements.AtwsName
 class ConfigInfo {
 
 	final static CLASS = ConfigInfo.class.name
-	
+
 	/**
 	 * Actual data
 	 */
 
+	final String      provenance      // indicates where the config comes from; used in debugging
 	final Map         uriMap          // map scheme (http,https) to java.net.URI instance; always set but maybe empty
 	final Boolean     secure          // secure or not? true by default
 	final Boolean     hostnameverify  // hostname verification or not? true by default
 	final AtwsName    service         // web service to call, "ping" by default
 	final AtpName     procedure       // procedure to call if web service = "launch", unset by default
 	final Credentials credentials     // credentials, unset by default
+	final Long        caseId          // give a numeric case (comes from WinCC)
+	final String      casefile        // name of "case file", possibly with appended encoding
 
 	/**
 	 * Keywords used in config file or on command line
@@ -38,17 +43,21 @@ class ConfigInfo {
 	final static String key_hostnameverify = 'hostnameverify'
 	final static String key_service        = 'service' // web service
 	final static String key_procedure      = 'procedure' // alarmtilt procedure
-	final static String key_credentials    = 'credentials' // gives USERNAME::PASSWORD, transforemd into "Creds" instance
+	final static String key_credentials    = 'credentials' // gives USERNAME::PASSWORD, transformed into "Creds" instance later
+	final static String key_caseid         = 'case' // give a numeric case (from WinCC), transformed into valid service/procedure later
+	final static String key_casefile       = 'casefile' // indicates where the case mapping comes from
 
 	/**
 	 * Create the "fully default ConfigInfo", which does not contain much
 	 */
 
 	ConfigInfo() {
+		provenance     = 'empty constructor'
 		uriMap         = [:].asImmutable()
-		secure         = true
-		hostnameverify = true
-		service        = AtwsMap.lookup('ping').name
+		secure         = true // there is no reason to not use https by default
+		hostnameverify = true // there is no reason to not verify hostname by default
+		service        = AtwsMap.makeName('ping') // by default, just "ping" remote server
+		casefile       = null
 		assert uriMap != null
 	}
 
@@ -62,26 +71,30 @@ class ConfigInfo {
 	 */
 
 	ConfigInfo(String what, List msgs, boolean lenient) {
+		this.provenance = "slurped from '${what}'"
 		// the next line will throw if there is fishyness
-		List text = Helper.slurpConfig(what,msgs)
+		List text = ConfigInfoHelper.slurpConfig(what,msgs)
 		// no exception, so we could read something... process it!
-		Map map = Helper.mapifyKeyValueTextForConfigInfo(text, msgs, lenient)
+		Map map = ConfigInfoHelper.mapifyKeyValueText(text, msgs, lenient)
 		// get stuff from the "map"
-		this.uriMap = map[key_url].asImmutable();
+		this.uriMap = map[key_url].asImmutable()
 		this.secure = map[key_secure]
 		this.hostnameverify = map[key_hostnameverify]
 		this.service = map[key_service]
 		this.procedure = map[key_procedure]
 		this.credentials = map[key_credentials]
+		this.caseId = map[key_caseid]
+		this.casefile = map[key_casefile]
 	}
 
 	/**
 	 * Construct from given values
 	 */
-	
-	ConfigInfo(Map uriMap, Boolean secure, Boolean hostnameverify, AtwsName service, AtpName procedure, Credentials credentials) {
+
+	ConfigInfo(Map uriMap, Boolean secure, Boolean hostnameverify, AtwsName service, AtpName procedure, Credentials credentials, Long caseId, String casefile) {
+		this.provenance = 'constructed from discrete values (from the command line)'
 		Map tmpMap = [:]
-		if (uriMap) {			
+		if (uriMap) {
 			uriMap.each { k,v -> tmpMap[k] = v }
 		}
 		this.uriMap = tmpMap.asImmutable()
@@ -90,8 +103,10 @@ class ConfigInfo {
 		this.service = service
 		this.procedure = procedure
 		this.credentials = credentials
+		this.caseId = caseId
+		this.casefile = casefile
 	}
-	
+
 	/**
 	 * Merge two "ConfigInfo" into one, one with high, one with low priority.
 	 */
@@ -99,20 +114,36 @@ class ConfigInfo {
 	ConfigInfo(ConfigInfo high, ConfigInfo low) {
 		checkNotNull(high)
 		checkNotNull(low)
-		this.uriMap         = Helper.overrideMap(high.uriMap, low.uriMap).asImmutable()
-		this.secure         = Helper.override(high.secure, low.secure)
-		this.hostnameverify = Helper.override(high.hostnameverify, low.hostnameverify)
-		this.service        = Helper.override(high.service, low.service)
-		this.procedure      = Helper.override(high.procedure, low.procedure)
-		this.credentials    = Helper.override(high.credentials, low.credentials)
+		this.uriMap         = ConfigInfoHelper.overrideMap(high.uriMap, low.uriMap).asImmutable()
+		this.secure         = ConfigInfoHelper.override(high.secure, low.secure)
+		this.hostnameverify = ConfigInfoHelper.override(high.hostnameverify, low.hostnameverify)
+		this.credentials    = ConfigInfoHelper.override(high.credentials, low.credentials)
+		this.caseId         = ConfigInfoHelper.override(high.caseId, low.caseId)
+		this.casefile       = ConfigInfoHelper.override(high.casefile, low.casefile)
+		if (this.caseId != null) {
+			// only if case id is not set...
+			this.service   = ConfigInfoHelper.override(high.service, low.service)
+			this.procedure = ConfigInfoHelper.override(high.procedure, low.procedure)
+		}
 		assert this.uriMap != null
 	}
 
 	/**
 	 * Helper
 	 */
-	
+
 	String toString() {
-		return "uriMap = ${uriMap}, secure = ${secure}, hostnameverify = ${hostnameverify}, service = ${service}, procedure = ${procedure}, credentials = ${credentials?.username}"	
+		// uriMap will write itself quite well; do not print password
+		String x = """
+provenance     = ${provenance}
+uriMap         = ${uriMap}
+secure         = ${secure}
+hostnameverify = ${hostnameverify}
+service        = ${service}
+procedure      = ${procedure}
+caseId         = ${caseId}
+casefile       = ${casefile}
+credentials    = ${credentials?.username}::..."""
+		return x as String
 	}
 }

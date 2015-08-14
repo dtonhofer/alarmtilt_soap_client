@@ -1,9 +1,10 @@
 package eu.qleap.soapyatc;
 
-import java.io.File;
-
 import static name.heavycarbon.checks.BasicChecks.*
 
+import java.util.List;
+
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.namespace.QName
 
 import name.heavycarbon.carpetbag.ResourceHelpGroovy
@@ -14,15 +15,22 @@ import org.slf4j.LoggerFactory
 import v3.res.soap.webservice.alarmtilt.com.AlarmTILTRestrictedWebService
 import v3.res.soap.webservice.alarmtilt.com.AuthParam
 import v3.res.soap.webservice.alarmtilt.com.AuthType
+import v3.res.soap.webservice.alarmtilt.com.ContactUser;
 import v3.res.soap.webservice.alarmtilt.com.LaunchProcedureParam
 import v3.res.soap.webservice.alarmtilt.com.LaunchProcedureResult
-import v3.res.soap.webservice.alarmtilt.com.LaunchProcedureResultEnum;
+import v3.res.soap.webservice.alarmtilt.com.LaunchProcedureResultEnum
 import v3.res.soap.webservice.alarmtilt.com.PingServiceResult
-import v3.res.soap.webservice.alarmtilt.com.PingServiceResultEnum;
+import v3.res.soap.webservice.alarmtilt.com.PingServiceResultEnum
+import v3.res.soap.webservice.alarmtilt.com.ProcedureVariable;
+import v3.res.soap.webservice.alarmtilt.com.Step;
 import v3.res.soap.webservice.alarmtilt.com.WsResV3
 import eu.qleap.soapyatc.argproc.ArgsProcessor
+import eu.qleap.soapyatc.argproc.CaseFile;
+import eu.qleap.soapyatc.argproc.CaseFile;
 import eu.qleap.soapyatc.config.ConfigInfo
+import eu.qleap.soapyatc.config.Credentials;
 import eu.qleap.soapyatc.elements.AtpMap
+import eu.qleap.soapyatc.elements.AtpName;
 import eu.qleap.soapyatc.elements.AtwsMap
 import eu.qleap.soapyatc.elements.AtwsName
 
@@ -56,11 +64,30 @@ import eu.qleap.soapyatc.elements.AtwsName
  * 2015.08.11 - First run 
  ******************************************************************************/
 
-
 public final class Call {
 
-	static final String CLASS = Call.class.name
-	static final Logger LOGGER_main = LoggerFactory.getLogger("${CLASS}.main")
+	private static final String CLASS = Call.class.name
+	private static final Logger LOGGER_main                   = LoggerFactory.getLogger("${CLASS}.main")
+	private static final Logger LOGGER_processArgs            = LoggerFactory.getLogger("${CLASS}.processArgs")
+	private static final Logger LOGGER_mergeConfigs           = LoggerFactory.getLogger("${CLASS}.mergeConfigs")
+	private static final Logger LOGGER_alignConfigsByPriority = LoggerFactory.getLogger("${CLASS}.alignConfigByPriority")
+	private static final Logger LOGGER_readConfigs            = LoggerFactory.getLogger("${CLASS}.readConfigs")
+	private static final Logger LOGGER_precheck               = LoggerFactory.getLogger("${CLASS}.precheck")
+	private static final Logger LOGGER_ping                   = LoggerFactory.getLogger("${CLASS}.ping")
+	private static final Logger LOGGER_launch                 = LoggerFactory.getLogger("${CLASS}.launch")
+	private static final Logger LOGGER_realMain               = LoggerFactory.getLogger("${CLASS}.realMain")
+	private static final Logger LOGGER_whatToCall             = LoggerFactory.getLogger("${CLASS}.whatToCall")
+	
+	private static final String tag_result            = 'tag_result'
+	private static final String tag_msgs              = 'tag_msgs'
+	private static final String tag_tailvalues        = 'tag_tailvalues'
+	private static final String tag_servicetocall     = 'tag_servicetocall'
+	private static final String tag_proceduretolaunch = 'tag_proceduretolaunch'
+	
+	private static final String DO_THIS = "Configure in config file or on command line. Try '--help' on the command line for hints."
+
+	private static final AtwsName PING   = AtwsMap.makeName('ping')
+	private static final AtwsName LAUNCH = AtwsMap.makeName('launch')
 
 	static final String NAMESPACE = 'com.alarmtilt.webservice.soap.res.v3'
 	static final String LOCAL_PART = 'ws-res-v3'
@@ -106,12 +133,21 @@ public final class Call {
 		res << "--hostnameverify[=Y/N] : Switch SSL hostname verification on/off."
 		res << "                         Default is YES."
 		res << "--service=SERVICE      : Give name of the remote web service to call."
+		res << "                         This is a case-insensitive string id, not the"
+		res << "                         actual service name."
 		res << "--procedure=PROCEDURE  : If the 'service' chosen is 'launch', give the"
 		res << "                         name of the AlarmTILT alerting procedure to"
 		res << "                         launch."
+		res << "                         This is a case-insensitive string id, not the"
+		res << "                         actual procedure name."
 		res << "--creds=CREDS          : Use credentials string CRED, which must be of"
 		res << "                         the form 'USER::PASSWORD'"
-		// res << "--verbose[=LEVEL]      : Set verbosity (level is an integer)"
+		res << "--case=NUMERIC_CASE_ID : The numeric id from WinCC is passed in."
+		res << "                         Giving this overrides 'service' and 'procedure'"
+		res << "                         to predefined values."
+		res << "--casefile=CASEFILE    : Contains the mapping between NUMERIC_CASE_ID"
+        res << "                         and name of procedure to lauch. Must be given"
+		res << "                         if '--case' is used; same format as for CONFIG."
 		res << "\n"
 		res << "Known SERVICE names are:"
 		res << "\n"
@@ -123,189 +159,308 @@ public final class Call {
 		return res
 	}
 
-	private static List readConfigs(List configNames, List msgs) {
+	private static List readConfigs(List configNames) {
+		Logger logger = LOGGER_readConfigs
+		checkNotNull(configNames)
+		final boolean lenient = true
 		List res = []
-		if (configNames) {
-			configNames.each { String what ->
-				try {
-					boolean lenient = true
-					res << new ConfigInfo(what, msgs, lenient)
+		configNames.each { String what ->
+			try {
+				List msgs = []
+				res << new ConfigInfo(what, msgs, lenient)
+				msgs.each {
+					logger.warn("${it}")
 				}
-				catch (Exception exe) {
-					msgs << exe.message
-				}
+			}
+			catch (Exception exe) {
+				logger.warn("While reading config named '${what}' -- disregarding this config",exe)
 			}
 		}
 		return res
 	}
 
-	private static List alignConfigs(Map result, List msgs) {
-		List configs = []
+	private static List alignConfigsByPriority(Map argResult) {
+		Logger logger = LOGGER_alignConfigsByPriority
 		//
-		// Next up is "the one constructed from $DEFAULT_CONFIG
-		// Then come all the ones indicated on the command line
+		// Read configuration by priority
 		//
 		List readThese = [DEFAULT_CONFIG]
-		if (result[ArgsProcessor.OPTION_CONFIG]) {
-			readThese.addAll(result[ArgsProcessor.OPTION_CONFIG])
+		if (argResult[ArgsProcessor.OPTION_CONFIG]) {
+			readThese.addAll(argResult[ArgsProcessor.OPTION_CONFIG])
 		}
-		configs.addAll(readConfigs(readThese, msgs))
+		if (logger.isDebugEnabled()) {
+			logger.debug("The following configuration will be read in order: ${readThese}")
+		}
 		//
-		// Finally comes the one BUILT from the command line
+		// Align ConfigInfo instances by priority
+		// 1) Default 2) Those read in 3) The one built from the command line
 		//
-		configs << new
+		List configList = [new ConfigInfo()]
+		configList.addAll(readConfigs(readThese))
+		configList << new
 				ConfigInfo(
-				result[ArgsProcessor.OPTION_URL],
-				result[ArgsProcessor.OPTION_SECURE],
-				result[ArgsProcessor.OPTION_HNV],
-				result[ArgsProcessor.OPTION_SERVICE],
-				result[ArgsProcessor.OPTION_PROCEDURE],
-				result[ArgsProcessor.OPTION_CREDS])
-		return configs
+				argResult[ArgsProcessor.OPTION_URL],
+				argResult[ArgsProcessor.OPTION_SECURE],
+				argResult[ArgsProcessor.OPTION_HNV],
+				argResult[ArgsProcessor.OPTION_SERVICE],
+				argResult[ArgsProcessor.OPTION_PROCEDURE],
+				argResult[ArgsProcessor.OPTION_CREDS],
+				argResult[ArgsProcessor.OPTION_CASEID],
+				argResult[ArgsProcessor.OPTION_CASEFILE])
+		if (logger.isDebugEnabled()) {
+			configList.each { ConfigInfo ci -> logger.debug("${ci}") }
+		}
+		return configList
 	}
 
-
-	public static void main(String[] args) throws java.lang.Exception {
-		Logger logger = LOGGER_main
-		//
-		// Handling of passed arguments:
-		// result     = map of key-value pairs, where the "key" is the option string
-		// tailValues = list of "Value" instances that could be found at the tail
-		//              end of the argument string
-		//
+	private static Map processArgs(String[] args) {
+		Logger logger = LOGGER_processArgs
 		List msgs = []
-		Map mm = ArgsProcessor.process(args, msgs)
-		Map  result     = mm[ArgsProcessor.tag_result]
-		List tailValues = mm[ArgsProcessor.tag_tailValues]
+		Map mm          = ArgsProcessor.process(args, msgs)
+		Map result      = mm[ArgsProcessor.tag_result]
+		List tailValues = mm[ArgsProcessor.tag_tailvalues]
+		assert result != null
+		assert tailValues != null
+		//
+		// If there is anything in "msgs" or "tail values", caller will exit!
+		//
 		if (msgs) {
-			msgs.each { logger.error("While processing arguments: ${it}") }
+			msgs.each { logger.error("Message from cmdline arg processing: ${it}") }
 		}
+		if (tailValues) {
+			tailValues.each { logger.error("Unused tail value in arguments: '${it}'") }
+		}
+		if (logger.isDebugEnabled()) {
+			result.each { k, v -> logger.debug("Command line argument: ${k} --> ${v}") }
+			tailValues.each { logger.debug("Command line tail value: '${it}'") }
+		}
+		return [ (tag_result) : result, (tag_msgs) : msgs, (tag_tailvalues) : tailValues ]
+	}
+
+	private static ConfigInfo mergeConfigs(List configList) {
+		Logger logger = LOGGER_mergeConfigs
+		checkNotNullAndNotEmpty(configList)
+		ConfigInfo current = configList[0]
+		for (int i=1; i< configList.size(); i++) {
+			ConfigInfo highPrio = configList[i]
+			current = new ConfigInfo(highPrio, current)
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Resulting merged configuration: ${current}")
+		}
+		return current
+	}
+
+	private static URI precheck(ConfigInfo ci) {
+		Logger logger = LOGGER_precheck
+		boolean error = false
+		if (!ci.hostnameverify) {
+			logger.info("Disabling hostname verifier")
+			Helper.disableHostnameVerifier()
+		}
+		URI uri
+		if (ci.secure && ci.uriMap['https']) {
+			uri = ci.uriMap['https']
+		}
+		else {
+			uri = ci.uriMap['http']
+		}
+		if (!uri) {
+			logger.error("No valid URI configured! Secure was: ${ci.secure}. ${DO_THIS}")
+			error = true
+		}
+		if (error) {
+			System.exit(1)
+		}
+		return uri
 		//
-		// If help demanded, print and exit
+		// TODO Currently the whole WSDL is downloaded.
+		// We really don't want that!
+		// Consult: http://stackoverflow.com/questions/764772/jax-ws-loading-wsdl-from-jar
+		// The URL has to point to the WSDL, but then how to select https ?
 		//
-		if (result[ArgsProcessor.OPTION_HELP]) {
-			List help = generateHelpText()
-			help.each {
+	}
+
+	private static boolean ping(URI uri,AlarmTILTRestrictedWebService port) {
+		Logger logger = LOGGER_ping
+		checkNotNull(uri)
+		checkNotNull(port)
+		String rawName = AtwsMap.getRawName(PING) 
+		logger.info("Invoking service '${rawName}' at ${uri}");
+		try {
+			PingServiceResult res = port.pingService();
+			if (res.result == PingServiceResultEnum.OK) {
+				logger.info(res.result as String)
+				logger.info("Looking good - received OK")
+				return true
+			}
+			else {
+				logger.error(res.result as String)
+				logger.error("Something went wrong")
+				return false
+			}
+		} catch (Exception exe) {
+			logger.error("Service invocation failed", exe)
+			return false
+		}
+	}
+
+	private static boolean launch(URI uri,AlarmTILTRestrictedWebService port, Credentials creds, AtpName procedureToLaunch) {
+		Logger logger = LOGGER_launch
+		checkNotNull(uri,"uri")
+		checkNotNull(port,"port")
+		checkNotNull(creds,"credentials")
+		checkNotNull(procedureToLaunch,"procedure to launch")
+		String rawWebServiceName = AtwsMap.getRawName(LAUNCH)
+		String rawProcedureName = AtpMap.getRawName(procedureToLaunch)
+		logger.info("Invoking service '${rawWebServiceName}' with procedure '${rawProcedureName}' at ${uri}");
+
+		//
+		// Filling in credentials
+		//
+
+		AuthParam auth = new AuthParam()
+		auth.authDn = creds.username
+		auth.authPw = creds.password
+		auth.authType = AuthType.BASIC
+
+		//
+		// There is a procedure called "Alerte WinCC" with a variable called "Defaut" which has to be filled with the
+		// "procedure to launch", i.e. "ASA", "Cargolux" etc.
+		// Fomerly, there were N "procedures to launch"
+		//
+
+		LaunchProcedureParam p = new LaunchProcedureParam()
+		p.procedureName = "Alerte WinCC"
+		ProcedureVariable pv = new ProcedureVariable()
+		pv.name = 'Defaut'
+		pv.value = rawProcedureName
+		
+		// p.getVariables() returns a list that is created on need, so just "get()", then "add()"
+		p.getVariables().add(pv)
+
+		try {
+			LaunchProcedureResult res = port.launchProcedure(auth, p);
+			if (res.result == LaunchProcedureResultEnum.OK) {
+				logger.info(res.result as String)
+				logger.info("Looking good - received OK")
+				return true
+			}
+			else {
+				logger.error(res.result as String)
+				logger.error("Something went wrong")
+				return false
+			}
+		} catch (Exception exe) {
+			logger.error("Service invocation failed", exe)
+			return false
+		}
+	}
+
+	private static Map whatToCall(ConfigInfo ci) {
+		Logger logger = LOGGER_whatToCall
+		AtwsName serviceToCall
+		AtpName  procedureToLaunch
+		if (ci.caseId != null) {
+			List msgs = []
+			logger.info("A case id ${ci.caseId} has been given; looking up translation in a case file...")
+			String caseFile = ci.casefile
+			if (!caseFile) {
+				instaFail("Need to have a 'casefile' because the 'case' ${ci.caseId} is indicated, but no file has been given. ${DO_THIS}")
+			}
+			// load the "case file"; will throw on problem			
+			CaseFile cf = new CaseFile(ci.casefile, msgs)
+			msgs.each { it -> logger.warn("${it}") }
+			serviceToCall     = LAUNCH // force to LAUNCH
+			procedureToLaunch = cf.lookup(ci.caseId) // will throw on problem
+			logger.info("The case id '${ci.caseId}' maps procedure '${procedureToLaunch}'; proceeding...")
+		}
+		else {
+			serviceToCall = ci.service
+			if (serviceToCall == LAUNCH) {
+				procedureToLaunch = ci.procedure
+				checkNotNull(ci.procedure, "The service-to-call is ${serviceToCall} but the procedure to launch has not been given. ${DO_THIS}")
+			}
+			else {
+				if (ci.procedure != null) {
+					logger.warn("The service-to-call is ${serviceToCall} -- disregarding uneeded procedure to launch ${ci.procedure}")
+				}
+			}
+		}
+		return [ (tag_servicetocall) : serviceToCall, (tag_proceduretolaunch) : procedureToLaunch ]
+	}
+	
+	private static boolean realMain(String[] args) {
+		Logger logger = LOGGER_realMain
+		Map  argResult
+		List pargsMsgs
+		List tailValues
+		PARGS: {
+			Map res     = processArgs(args)		
+			argResult   = res[tag_result]
+			pargsMsgs   = res[tag_msgs]
+			tailValues  = res[tag_tailvalues]
+			assert argResult  != null
+			assert pargsMsgs  != null
+			assert tailValues != null
+ 		}
+		//
+		// If help demanded or an error occurred during command-line processing, print and exit
+		//
+		if (argResult[ArgsProcessor.OPTION_HELP] || !tailValues.isEmpty() || !pargsMsgs.isEmpty()) {
+			generateHelpText().each {
 				System.err.println(it)
 			}
 			System.err.flush()
 			System.exit(0)
 		}
 		//
-		// Merge all the configs into one!
+		// Build a single common configInfo by merging the other according to fixed priority
 		//
-		List configs = alignConfigs(result, msgs)
-		ConfigInfo merged = new ConfigInfo()
-		configs.each {
-			merged = new ConfigInfo(it, merged)
-		}
-		logger.info('Resulting merged configuration')
-		logger.info("http URL       : ${merged.uriMap['http']}")
-		logger.info("https URL      : ${merged.uriMap['https']}")
-		logger.info("secure         : ${merged.secure}")
-		logger.info("hostnameverify : ${merged.hostnameverify}")
-		logger.info("service        : ${merged.service}")
-		logger.info("procedure      : ${merged.procedure}")
-		logger.info("creds/username : ${merged.credentials?.username}")
-		logger.info("creds/password : ....")
+		ConfigInfo ci = mergeConfigs(alignConfigsByPriority(argResult))
 		//
-		// Ok, "merged" is the thing to use...
+		// Prepare for call; in particular if "case id" is set, invoke a launch of procedure 
 		//
-		boolean error = false
-		if (!merged.hostnameverify) {
-			logger.info("Disabling hostname verifier")
-			Helper.disableHostnameVerifier()
+		URI uri = precheck(ci)
+		WsResV3 wsService = new WsResV3(uri.toURL(), SERVICE_NAME)
+		AlarmTILTRestrictedWebService port = wsService.getAlarmTILTRestrictedWebServicePort()
+		AtwsName serviceToCall
+		AtpName  procedureToLaunch
+		WTC: {
+			Map wtc = whatToCall(ci)		
+			serviceToCall     = wtc[tag_servicetocall]
+			procedureToLaunch = wtc[tag_proceduretolaunch]
 		}
-		URI uri
-		if (merged.secure && merged.uriMap['https']) {
-			uri = merged.uriMap['https']
+		boolean res
+		switch (serviceToCall) {
+			case PING:
+				res = ping(uri,port)
+				break
+			case LAUNCH:
+				res = launch(uri,port,ci.credentials, procedureToLaunch)
+				break
+			default:
+				logger.error("Unknown web service '${ci.service}' requested")
+				res = false
 		}
-		else {
-			uri = merged.uriMap['http']
+		return res
+	}
+
+	public static void main(String[] args) {
+		Logger logger = LOGGER_main
+		logger.info("============== NEW INVOCATION ==============")
+		boolean res
+		try {
+			res = realMain(args)
 		}
-		if (!uri) {
-			logger.error("No valid URI! Secure: ${merged.secure}")
-			error = true
+		finally {
+			logger.info("============== TERMINATING with ${res} ==============")
 		}
-		if (!merged.service) {
-			logger.error('No valid Web Service')
-			error = true
-		}
-		if (error) {
+		if (!res) {
 			System.exit(1)
 		}
-		//
-		// Currently the whole WSDL is downloaded.
-		// We really don't want that!
-		// Consult: http://stackoverflow.com/questions/764772/jax-ws-loading-wsdl-from-jar
-		// The URL has to point to the WSDL, but then how to select https ?
-		//
-		if (AtwsName.makeName('ping') == merged.service) {
-			WsResV3 wsService = new WsResV3(uri.toURL(), SERVICE_NAME);
-			AlarmTILTRestrictedWebService port = wsService.getAlarmTILTRestrictedWebServicePort();
-			logger.info("Invoking service '${merged.service}' to ${uri}");
-			try {
-				PingServiceResult res = port.pingService();
-				if (res.result == PingServiceResultEnum.OK) {
-					logger.info(res.result as String)
-					logger.info("Looking good - received OK")
-					System.exit(0)
-				}
-				else {
-					logger.error(res.result as String)
-					logger.error("Something went wrong")
-					System.exit(1)
-				}
-			} catch (Exception exe) {
-				logger.error("Service invocation failed", exe)
-				System.exit(1)
-			}
-		}
-		else if (AtwsName.makeName('launch') == merged.service) {
-			if (!merged.credentials) {
-				logger.error('No valid credentials')
-				error = true
-			}
-			if (!merged.procedure) {
-				logger.error('No valid procedure')
-				error = true
-			}
-			if (error) {
-				System.exit(1)
-			}
-			WsResV3 wsService = new WsResV3(uri.toURL(), SERVICE_NAME);
-			AlarmTILTRestrictedWebService port = wsService.getAlarmTILTRestrictedWebServicePort();
-			logger.info("Invoking service '${merged.service}' with procedure '${merged.procedure}' to ${uri}");
-			AuthParam auth = new AuthParam()
-			/*
-			 auth.authDn = merged.credentials.username
-			 auth.authPw = merged.credentials.password
-			 auth.authType = AuthType.BASIC
-			 */
-
-			auth.authDn = "2c3f9e99e369a891c1463ea8bcb65510"
-			auth.authType = AuthType.HEX_64
-
-			try {
-				LaunchProcedureResult res = port.launchProcedure(auth, new LaunchProcedureParam());
-				if (res.result == LaunchProcedureResultEnum.OK) {
-					logger.info(res.result as String)
-					logger.info("Looking good - received OK")
-					System.exit(0)
-				}
-				else {
-					logger.error(res.result as String)
-					logger.error("Something went wrong")
-					System.exit(1)
-				}
-			} catch (Exception exe) {
-				logger.error("Service invocation failed", exe)
-				System.exit(1)
-			}
-		}
 		else {
-			logger.error("Unknown web service '${merged.service}'")
-			System.exit(1)
+			System.exit(0)
 		}
 	}
 }

@@ -11,8 +11,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import eu.qleap.soapyatc.config.Credentials;
-import eu.qleap.soapyatc.config.Helper;
+import eu.qleap.soapyatc.config.ConfigInfoHelper;
+import eu.qleap.soapyatc.elements.AtpMap;
 import eu.qleap.soapyatc.elements.AtpName;
+import eu.qleap.soapyatc.elements.AtwsMap;
 import eu.qleap.soapyatc.elements.AtwsName;
 
 /* 34567890123456789012345678901234567890123456789012345678901234567890123456789
@@ -31,7 +33,7 @@ class ArgsProcessor {
 	 */
 
 	final static tag_result        = 'result'
-	final static tag_tailValues    = 'tailValues'
+	final static tag_tailvalues    = 'tailvalues'
 
 	final static tag_new_i         = 'new_i'
 	final static tag_new_state     = 'new_state'
@@ -39,6 +41,9 @@ class ArgsProcessor {
 
 	/**
 	 * Options which may be found on the command line
+	 * "case" is a shortcut. It expects a numeric id which is then 
+	 * mapped to "service=launch" and "procedure=X" where X is
+	 * obtained from a lookup table 
 	 */
 
 	final static String OPTION_CONFIG     = 'config'
@@ -48,8 +53,9 @@ class ArgsProcessor {
 	final static String OPTION_SERVICE    = 'service'
 	final static String OPTION_PROCEDURE  = 'procedure'
 	final static String OPTION_CREDS      = 'creds'
-	final static String OPTION_VERBOSE    = 'verbose'
 	final static String OPTION_HELP       = 'help'
+	final static String OPTION_CASEID     = 'case'
+	final static String OPTION_CASEFILE   = 'casefile'
 
 	/**
 	 * States of the argument processor
@@ -86,7 +92,6 @@ class ArgsProcessor {
 	 * OPTION_SERVICE    => a AtwsName
 	 * OPTION_PROCEDURE  => a AtpName
 	 * OPTION_CREDS      => a Credentials structure
-	 * OPTION_VERBOSE    => an Integer giving the log level (1 == lowest)
 	 * OPTION_HELP       => a boolean
 	 */
 
@@ -98,11 +103,6 @@ class ArgsProcessor {
 		// Preprocess
 		//
 		List argList = ArgsPreprocessor.preprocess(args, msgs)
-		/*
-		argList.each {
-			System.out << it << "\n";
-		}
-		*/
 		//
 		// Set up:
 		// - State of processor
@@ -149,7 +149,9 @@ class ArgsProcessor {
 				cannotHappen("Unhandled state ${state} -- program fix needed")
 			}
 		}
-		return [ (tag_result) : result, (tag_tailValues): tailValues ]
+		assert result != null
+		assert tailValues != null
+		return [ (tag_result) : result, (tag_tailvalues): tailValues ]
 	}
 
 	/**
@@ -184,7 +186,9 @@ class ArgsProcessor {
 				OPTION_URL,
 				OPTION_SERVICE,
 				OPTION_PROCEDURE,
-				OPTION_CREDS
+				OPTION_CREDS,
+				OPTION_CASEID,
+				OPTION_CASEFILE
 			]) {
 				openOptionStr = argTxt
 				state = State.EXPECT_ONE_ARG
@@ -244,7 +248,7 @@ class ArgsProcessor {
 			// Exceptions may be thrown, catch at the end and proceed
 			//
 			try {
-				String argTxt = arg.txt.toLowerCase()
+				String argTxt = arg.txt // keep case!!
 				if (optionStr == OPTION_CONFIG) {
 					if (result[OPTION_CONFIG]) {
 						// non-empty list already exists, just add to it
@@ -262,27 +266,37 @@ class ArgsProcessor {
 						uriMap = [:]
 					}
 					result[OPTION_URL] = uriMap
-					// integrate the new URI into the uriMap, which may fial
-					Helper.processAnotherUri(argTxt, uriMap, msgs)
+					// integrate the new URI into the uriMap, which may fail
+					ConfigInfoHelper.processAnotherUri(argTxt, uriMap, msgs)
 				}
 				else if (optionStr == OPTION_SERVICE) {
-					// possibly override an existing value
-					result[OPTION_SERVICE] = AtwsName.makeName(argTxt)
+					// possibly override an existing value (if this is a name, otherwise exception)
+					result[OPTION_SERVICE] = AtwsMap.makeName(argTxt)
 				}
 				else if (optionStr == OPTION_PROCEDURE) {
-					// possibly override an existing value
-					result[OPTION_PROCEDURE] = AtpName.makeName(argTxt)
+					// possibly override an existing value (if this is a name, otherwise exception)
+					result[OPTION_PROCEDURE] = AtpMap.makeName(argTxt)
 				}
 				else if (optionStr == OPTION_CREDS) {
-					// possibly override an existing value
+					// possibly override an existing value( (if this are valid credentials, otherwise exception)
 					result[OPTION_CREDS] = Credentials.makeCredentials(argTxt)
+				}
+				else if (optionStr == OPTION_CASEID) {
+					// possibly override an existing value (if this is a long, otherwise exception)
+					result[OPTION_CASEID] = Long.valueOf(argTxt)
+				}
+				else if (optionStr == OPTION_CASEFILE) {
+					// indicates a "case file"; do not do anything with this string as we may not need it
+					result[OPTION_CASEFILE] = argTxt
 				}
 				else {
 					cannotHappen("Unhandled case '${optionStr}' -- need a program fix");
 				}
 			}
 			catch (Exception exe) {
-				// just ignore this problem
+				//
+				// Just ignore this problem and feed "msgs". If there is anything in "msgs", main() will exit with error
+				//
 				msgs << exe.getMessage()
 			}
 			state = State.FRESH
@@ -315,6 +329,9 @@ class ArgsProcessor {
 				result[optionStr]=b
 			}
 			catch (Exception exe) {
+				//
+				// Just ignore this problem and feed "msgs". If there is anything in "msgs", main() will exit with error
+				//
 				msgs << "Unusable value '${arg.txt}' (it's not a boolean) -- skipping this"
 			}
 			state = State.FRESH

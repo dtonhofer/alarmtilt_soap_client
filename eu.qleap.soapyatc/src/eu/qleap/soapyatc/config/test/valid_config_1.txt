@@ -22,3 +22,4 @@ hostnameverify  = yes
 service         = launch
 procedure       = cargolux
 credentials     = USERNAME::PASSWORD
+case            = 5556

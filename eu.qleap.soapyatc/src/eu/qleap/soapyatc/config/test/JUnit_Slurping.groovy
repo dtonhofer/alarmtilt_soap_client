@@ -9,7 +9,7 @@ import org.junit.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import eu.qleap.soapyatc.config.Helper
+import eu.qleap.soapyatc.config.ConfigInfoHelper
 
 class JUnit_Slurping {
 
@@ -20,7 +20,7 @@ class JUnit_Slurping {
 		Logger logger = LoggerFactory.getLogger("${CLASS}.slurpExistingResource")
 		List msgs = []
 		def fqrn = ResourceHelpGroovy.fullyQualifyResourceName(JUnit_Slurping.class,'Test.txt')
-		List file = Helper.slurpConfig("^${fqrn}",'UTF-8',msgs)
+		List file = ConfigInfoHelper.slurpConfig("^${fqrn}",'UTF-8',msgs)
 		msgs.each { logger.info(it) }
 		file.each { logger.info(it) }
 		assertEquals( file[0], 'This is just a test file')
@@ -33,7 +33,7 @@ class JUnit_Slurping {
 		List msgs = []
 		def fqrn = ResourceHelpGroovy.fullyQualifyResourceName(JUnit_Slurping.class,'Test_Nonexistent.txt')
 		shouldFail CheckFailedException, {
-			Helper.slurpConfig("^${fqrn}",'UTF-8',msgs)
+			ConfigInfoHelper.slurpConfig("^${fqrn}",'UTF-8',msgs)
 		}
 	}
 
@@ -42,7 +42,7 @@ class JUnit_Slurping {
 		Logger logger = LoggerFactory.getLogger("${CLASS}.slurpExistingResource2")
 		List msgs = []
 		def fqrn = ResourceHelpGroovy.fullyQualifyResourceName(JUnit_Slurping.class,'Test.txt')
-		List file = Helper.slurpConfig("^${fqrn}",msgs)
+		List file = ConfigInfoHelper.slurpConfig("^${fqrn}",msgs)
 		msgs.each { logger.info(it) }
 		file.each { logger.info(it) }
 		assertEquals( file[0] , 'This is just a test file' )
@@ -55,7 +55,7 @@ class JUnit_Slurping {
 		Logger logger = LoggerFactory.getLogger("${CLASS}.slurpExistingResource2InISO88591")
 		List msgs = []
 		def fqrn = ResourceHelpGroovy.fullyQualifyResourceName(JUnit_Slurping.class,'Test.txt')
-		List file = Helper.slurpConfig("^${fqrn}::iso-8859-1",msgs)
+		List file = ConfigInfoHelper.slurpConfig("^${fqrn}::iso-8859-1",msgs)
 		msgs.each { logger.info(it) }
 		file.each { logger.info(it) }
 		assertEquals(  file[0] , 'This is just a test file')
@@ -69,7 +69,7 @@ class JUnit_Slurping {
 		List msgs = []
 		def fqrn = ResourceHelpGroovy.fullyQualifyResourceName(JUnit_Slurping.class,'Test_Nonexistent.txt')
 		shouldFail CheckFailedException, {
-			Helper.slurpConfig("^${fqrn}::iso-8859-1",msgs)
+			ConfigInfoHelper.slurpConfig("^${fqrn}::iso-8859-1",msgs)
 		}
 	}
 }

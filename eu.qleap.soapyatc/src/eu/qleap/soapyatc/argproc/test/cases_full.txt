@@ -1,0 +1,9 @@
+# Some value
+
+1    => asa
+1103 => auslauf_a2_a3
+1108 => asa
+1303 => cargolux
+1203 => einlauf_a2_a3
+1003 => pumpwerk
+1403 => rub2

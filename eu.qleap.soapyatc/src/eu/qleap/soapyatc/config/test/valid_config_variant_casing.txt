@@ -1,10 +1,6 @@
-# Default configuration for access AlarmTILT web service
-#
-# Additional and overriding parameters can (or must) be given on the command line
-# 
+# This is just a test file
 # Note that we can list a number of URLs with different schemes (https/https)
 # If there are several URLs with the same scheme, the URL last encountered is used
-#
 # This also applies to values: the value last encountered is used
 # Credentials must be given as USERNAME::PASSWORD , the "::" is the separator
 #
@@ -19,10 +15,8 @@
 # procedure      = in case of "launch" service, tghe procedure to launch
 # credentials    = credentials to give to remote server; format is always USERNAME::PASSWORD
 
-url             = http://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
-url             = https://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
-secure          = no
-service         = launch
-procedure       = test
-credentials     = FOO::BAR
-
+URL             = https://x.y.com/hello1?wsdl
+url             = http://a.b.com/hello2?wsdl
+SECure          = no
+credENTIALS     = USERNAME::HELLO WORLDS
+case            = 444

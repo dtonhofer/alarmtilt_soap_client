@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import name.heavycarbon.carpetbag.AbstractName;
 import static name.heavycarbon.checks.BasicChecks.*;
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -24,29 +25,9 @@ import org.slf4j.LoggerFactory
 
 final class AtwsName extends AbstractName {
 
-	final static CLASS = AtwsName.class.name
-	final static Logger LOGGER_makeName = LoggerFactory.getLogger("${CLASS}.makeName")
-
 	AtwsName(String x) {
 		super(x)
 	}
-
-	/**
-	 * Make an AtwsName. Throw if that cannot be done. Always throws if null passed
-	 */
-
-	static AtwsName makeName(String name) {
-		Logger logger = LOGGER_makeName
-		checkNotNull(name, 'name')
-		AtwsDesc res = AtwsMap.lookup(name,false,false)
-		if (!res) {
-			instaFail("Could not transform the string '${name}' into an ${AtwsName.class.getName()}")
-		}
-		else {
-			return res.name
-		}
-	}
-
 }
 
 /**
@@ -90,9 +71,17 @@ abstract class AtwsMap {
 		map = tmpMap.asImmutable()
 	}
 
+	/**
+	 * Unreachable constructor
+	 */
+
 	private AtwsMap() {
 		cannotHappen("Class cannot be instantiated");
 	}
+
+	/**
+	 * Printing to list for "--help" output
+	 */
 
 	static List printOut() {
 		List res = []
@@ -101,6 +90,37 @@ abstract class AtwsMap {
 		}
 		return res
 	}
+
+	/**
+	 * Getting the "raw name" (which is sent to AlarmTILT) corresponding to a name
+	 * Throws if not possible.
+	 */
+
+	static String getRawName(AtwsName x) {
+		checkNotNull(x,'name')
+		AtwsDesc d = map[x]
+		checkNotNull(d,'No descriptor corresponding to the passed name \'{}\'',x)
+		return d.rawName
+	}
+
+	/**
+	 * Making a name from a string (if possible). If not possible, throws
+	 */
+
+	static AtwsName makeName(String x) {
+		checkNotNull(x,'name')
+		AtwsDesc d = lookup(x, false, false)
+		if (!d) {
+			instaFail("Could not transform the string '${x}' into an ${AtwsName.class.getName()}")
+		}
+		else {
+			return d.name
+		}
+	}
+
+	/**
+	 * Lookup; Always throws if null is passed, but the other cases can be controlled
+	 */
 
 	static AtwsDesc lookup(String x, boolean throwIfNotFound, boolean throwIfBadName) {
 		def key
@@ -120,6 +140,10 @@ abstract class AtwsMap {
 		}
 		return res
 	}
+
+	/**
+	 * Lookup; Always throws if there is a problem
+	 */
 
 	static AtwsDesc lookup(String x) {
 		return lookup(x,true,true)

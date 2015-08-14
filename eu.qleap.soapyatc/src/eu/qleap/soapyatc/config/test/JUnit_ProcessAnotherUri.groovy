@@ -7,7 +7,7 @@ import org.junit.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import eu.qleap.soapyatc.config.Helper
+import eu.qleap.soapyatc.config.ConfigInfoHelper
 
 class JUnit_ProcessAnotherUri {
 
@@ -18,7 +18,7 @@ class JUnit_ProcessAnotherUri {
 		Logger logger = LoggerFactory.getLogger("${CLASS}.testProcessAnotherUri1")
 		Map res = [:]
 		List msgs = []
-		Helper.processAnotherUri('https://x.com/hello?wsdl', res, msgs)
+		ConfigInfoHelper.processAnotherUri('https://x.com/hello?wsdl', res, msgs)
 		msgs.each { logger.info(it) }
 		assertEquals( [ 'https' : new URI('https://x.com/hello?wsdl') ] , res)
 	}
@@ -28,8 +28,8 @@ class JUnit_ProcessAnotherUri {
 		Logger logger = LoggerFactory.getLogger("${CLASS}.testProcessAnotherUri2")
 		Map res = [:]
 		List msgs = []
-		Helper.processAnotherUri('https://x.com/hello?wsdl', res, msgs)
-		Helper.processAnotherUri('http://y.com/hello?wsdl', res, msgs)
+		ConfigInfoHelper.processAnotherUri('https://x.com/hello?wsdl', res, msgs)
+		ConfigInfoHelper.processAnotherUri('http://y.com/hello?wsdl', res, msgs)
 		msgs.each { logger.info(it) }
 		assertEquals([ 'https' : new URI('https://x.com/hello?wsdl') , 'http' : new URI('http://y.com/hello?wsdl') ], res)
 	}
@@ -39,8 +39,8 @@ class JUnit_ProcessAnotherUri {
 		Logger logger = LoggerFactory.getLogger("${CLASS}.testProcessAnotherUri3")
 		Map res = [:]
 		List msgs = []
-		Helper.processAnotherUri('https://x.com/hello?wsdl', res, msgs)
-		Helper.processAnotherUri('https://foo.com/goodby?wsdl', res, msgs)
+		ConfigInfoHelper.processAnotherUri('https://x.com/hello?wsdl', res, msgs)
+		ConfigInfoHelper.processAnotherUri('https://foo.com/goodby?wsdl', res, msgs)
 		msgs.each { logger.info(it) }
 		assertEquals(  [ 'https' : new URI('https://foo.com/goodby?wsdl') ], res )
 	}
@@ -51,7 +51,7 @@ class JUnit_ProcessAnotherUri {
 		Map res = [:]
 		List msgs = []
 		shouldFail CheckFailedException, {
-			Helper.processAnotherUri('foobar', res, msgs)
+			ConfigInfoHelper.processAnotherUri('foobar', res, msgs)
 		}
 	}
 
@@ -61,7 +61,7 @@ class JUnit_ProcessAnotherUri {
 		Map res = [:]
 		List msgs = []
 		shouldFail CheckFailedException, {
-			Helper.processAnotherUri('urn:foobar', res, msgs)
+			ConfigInfoHelper.processAnotherUri('urn:foobar', res, msgs)
 		}
 	}
 }

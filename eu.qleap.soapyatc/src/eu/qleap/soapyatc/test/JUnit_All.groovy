@@ -10,7 +10,8 @@ import org.junit.runners.Suite
 	eu.qleap.soapyatc.config.test.JUnit_ProcessAnotherUri.class,
 	eu.qleap.soapyatc.config.test.JUnit_Credentials.class,
 	eu.qleap.soapyatc.config.test.JUnit_ReadConfig.class,
-	eu.qleap.soapyatc.argproc.test.JUnit_ArgsPreprocessor.class
+	eu.qleap.soapyatc.argproc.test.JUnit_ArgsPreprocessor.class,
+	eu.qleap.soapyatc.argproc.test.JUnit_CaseFileReader.class
 	 ] )
 class JUnit_All {
 

@@ -1,8 +1,9 @@
 # Default configuration for access AlarmTILT web service
 #
 # Additional and overriding parameters can (or must) be given on the command line
+# or using additional config files indicated by "--config=..."
 # 
-# Note that we can list a number of URLs with different schemes (https/https)
+# We can list a number of URLs with different schemes (https/https)
 # If there are several URLs with the same scheme, the URL last encountered is used
 #
 # This also applies to values: the value last encountered is used
@@ -16,13 +17,33 @@
 # hostnameverify = verify the remote hostname against the certificate if https is used
 #                  should be true (the default)
 # service        = service to call; allowed are "ping" and "launch"
-# procedure      = in case of "launch" service, tghe procedure to launch
+#                  (this is not the name of the webservice as such, just a case-insensitive string
+#                   identifier. For example the actual name for the ping service as given in the
+#                   WSDL is 'pingService')
+# procedure      = in case of "launch" service, the name of the procedure to actually launch
+#                  (this is not the name of the webservice as such, just a case-insensitive string
+#                   identifier)            
 # credentials    = credentials to give to remote server; format is always USERNAME::PASSWORD
+#
 
-url             = http://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
-url             = https://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
-secure          = no
-# hostnameverify  = yes
-# service         = launch
-# procedure       = cargolux
-# credentials     = USERNAME::PASSWORD
+
+# ***************
+# Note: This file is generally not used; instead pass --config=... on the the command line!
+# ***************
+
+
+# In here, we just give default URLs and say that we ant the "unsecure" one by default (because
+# one may want to debug using tcpdump) The originating server may not even have DNS, so we give the IP.
+
+# url            = http://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
+# url            = https://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
+url              = http://148.251.129.56/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
+url              = https://148.251.129.56/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
+secure           = no
+# hostnameverify = yes
+# service        = ping
+# procedure      = foo
+# credentials    = USERNAME::PASSWORD
+# case           = NUMERIC CASE ID
+# casefile       = CASEFILE
+

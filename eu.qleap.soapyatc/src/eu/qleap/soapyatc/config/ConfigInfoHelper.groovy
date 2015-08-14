@@ -15,7 +15,9 @@ import name.heavycarbon.carpetbag.BooleanParser
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import eu.qleap.soapyatc.elements.AtpMap;
 import eu.qleap.soapyatc.elements.AtpName;
+import eu.qleap.soapyatc.elements.AtwsMap;
 import eu.qleap.soapyatc.elements.AtwsName;
 
 /* 34567890123456789012345678901234567890123456789012345678901234567890123456789
@@ -25,12 +27,12 @@ import eu.qleap.soapyatc.elements.AtwsName;
  * 2015.08.11 - First run
  ******************************************************************************/
 
-class Helper {
+class ConfigInfoHelper {
 
-	final static CLASS = Helper.class.name
-	final static Logger LOGGER_slurpConfig = LoggerFactory.getLogger("${CLASS}.slurpConfig")
-	final static Logger LOGGER_mapifyKeyValueTextForConfigInfo = LoggerFactory.getLogger("${CLASS}.mapifyKeyValueTextForConfigInfo")
-	final static Logger LOGGER_processAnotherUri = LoggerFactory.getLogger("${CLASS}.processAnotherUri")
+	private final static CLASS = ConfigInfoHelper.class.name
+	private final static Logger LOGGER_slurpConfig = LoggerFactory.getLogger("${CLASS}.slurpConfig")
+	private final static Logger LOGGER_mapifyKeyValueText = LoggerFactory.getLogger("${CLASS}.mapifyKeyValueText")
+	private final static Logger LOGGER_processAnotherUri = LoggerFactory.getLogger("${CLASS}.processAnotherUri")
 
 	private static final Pattern ATTVALPAT = ~/^\s*(\w+)\s*=\s*(.*?)\s*($|#)/
 
@@ -43,7 +45,7 @@ class Helper {
 	 * one which is not null wins!
 	 */
 
-	static override(def high, def low) {
+	private static override(def high, def low) {
 		if (high != null) {
 			return high
 		}
@@ -57,7 +59,7 @@ class Helper {
 	 * otherwise use the entry that exists in either one.
 	 */
 
-	static Map overrideMap(Map highMap, Map lowMap) {
+	private static Map overrideMap(Map highMap, Map lowMap) {
 		checkNotNull(highMap,'highMap')
 		checkNotNull(lowMap,'lowMap')
 		Map res = [:]
@@ -93,7 +95,7 @@ class Helper {
 		if (what[0] == '^') {
 			def fqrn = what.substring(1)
 			checkNotNullAndNotEmpty(fqrn,"resourceName with '^' removed")
-			msgs << "Reading configuration from fully qualified resource '${fqrn}'. Using encoding ${encoding}"
+			msgs << "Reading from fully qualified resource '${fqrn}'. Using encoding ${encoding}"
 			ResourceInfo rinfo = new ResourceInfo(fqrn,encoding)
 			// the next instruction will throw if the entry does not exist:
 			return ResourceHelpGroovy.slurpIntoListOfLines(rinfo)
@@ -101,7 +103,7 @@ class Helper {
 		else if (what[0] == java.io.File.separator || (java.io.File.separator == '\\' && what =~ /^[A-Z]:/)) {
 			// absolute path or absolute path on windows with drive letter
 			File configFile = new File(what)
-			msgs << "Reading configuration from file given by absolute path '${what}', resolved to '${configFile}'. Using encoding ${encoding}"
+			msgs << "Reading from file given by absolute path '${what}', resolved to '${configFile}'. Using encoding ${encoding}"
 			FileInfo finfo = new FileInfo(configFile,encoding)
 			// the next instruction will throw if the entry does not exist:
 			return ResourceHelpGroovy.slurpIntoListOfLines(finfo)
@@ -109,7 +111,7 @@ class Helper {
 		else {
 			// relative path to home (in Windows, this is a vague concept)
 			File configFile = new File(System.getProperty("user.home"),what)
-			msgs << "Reading configuration from file given by relative path '${what}', resolved to '${configFile}'. Using encoding ${encoding}"
+			msgs << "Reading from file given by relative path '${what}', resolved to '${configFile}'. Using encoding ${encoding}"
 			FileInfo finfo = new FileInfo(configFile,encoding)
 			// the next instruction will throw if the entry does not exist:
 			return ResourceHelpGroovy.slurpIntoListOfLines(finfo)
@@ -118,7 +120,7 @@ class Helper {
 
 	/**
 	 * Slurp a file or resource, throwing if nothing was found or else the content as a list of
-	 * string. Messages got to "msgs". The "whatWithEncoding" string make take the encoding with 
+	 * string. Messages go to "msgs". The "whatWithEncoding" string may (or may not) take the encoding with 
 	 * "::" appended.
 	 */
 
@@ -176,11 +178,11 @@ class Helper {
 	 * Text past a "#" is assumed to be commentary.
 	 * This is not a general function because it needs to have special knowledge about the "URL"
 	 * Should a problem lead to "full failure" or only "partial failure" whereby some values are
-	 * filled an others not? The boolean "throwOnLocalProblem" selects...
+	 * filled an others not? The boolean "lenient" selects...
 	 */
 
-	static Map mapifyKeyValueTextForConfigInfo(List text, List msgs, boolean lenient) {
-		Logger logger = LOGGER_mapifyKeyValueTextForConfigInfo
+	static Map mapifyKeyValueText(List text, List msgs, boolean lenient) {
+		Logger logger = LOGGER_mapifyKeyValueText
 		checkNotNull(text,'text')
 		checkNotNull(msgs,'msgs')
 		// no complex quoting shit for now; if time we can go all "bash escaping" on this later
@@ -221,6 +223,11 @@ class Helper {
 		return res
 	}
 	
+	/**
+	 * Here we actually apply the interpretation.
+	 * Missing values and unexpected data after "=" generally lead to exceptions ("instaFail")
+	 */
+
 	private static void switchByKey(String key, String value, Map res, List msgs, String line, boolean lenient) {
 		switch (key) {
 			case ConfigInfo.key_url:
@@ -239,11 +246,14 @@ class Helper {
 				break
 			case ConfigInfo.key_service:
 			// the next call throws if not found
-				res[(ConfigInfo.key_service)] = AtwsName.makeName(value)
+				res[(ConfigInfo.key_service)] = AtwsMap.makeName(value)
 				break
 			case ConfigInfo.key_procedure:
 			// the next call throws if not found
-				res[(ConfigInfo.key_procedure)] = AtpName.makeName(value)
+				res[(ConfigInfo.key_procedure)] = AtpMap.makeName(value)
+				break
+			case ConfigInfo.key_caseid:
+				res[(ConfigInfo.key_caseid)] = Long.valueOf(value)
 				break
 			default:
 			// the default in particular includes the case key_config
