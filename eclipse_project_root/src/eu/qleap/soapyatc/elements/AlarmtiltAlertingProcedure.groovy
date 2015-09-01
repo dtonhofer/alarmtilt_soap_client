@@ -1,7 +1,7 @@
 package eu.qleap.soapyatc.elements
 
 import static name.heavycarbon.checks.BasicChecks.*
-import name.heavycarbon.carpetbag.AbstractName
+import name.heavycarbon.utils.AbstractName
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

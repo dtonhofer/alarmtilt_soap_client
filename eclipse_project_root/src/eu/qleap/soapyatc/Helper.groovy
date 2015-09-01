@@ -10,7 +10,7 @@ import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
 
-import name.heavycarbon.carpetbag.ResourceHelpGroovy
+import name.heavycarbon.utils.ResourceHelpGroovy;
 
 /* 34567890123456789012345678901234567890123456789012345678901234567890123456789
  *******************************************************************************

@@ -5,7 +5,7 @@ import static name.heavycarbon.checks.BasicChecks.*
 import java.util.List;
 import java.util.Map;
 
-import name.heavycarbon.carpetbag.BooleanParser;
+import name.heavycarbon.utils.BooleanParser;
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

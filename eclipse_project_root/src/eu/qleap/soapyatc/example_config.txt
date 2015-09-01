@@ -1,7 +1,6 @@
-# Default configuration for access AlarmTILT web service
-#
-# Additional and overriding parameters can (or must) be given on the command line
-# or using additional config files indicated by "--config=..."
+# Example configuration for access AlarmTILT web service
+# 
+# Define the correct configuration file to use by passing "--config=..." on the command line!
 # 
 # We can list a number of URLs with different schemes (https/https)
 # If there are several URLs with the same scheme, the URL last encountered is used
@@ -26,21 +25,15 @@
 # credentials    = credentials to give to remote server; format is always USERNAME::PASSWORD
 #
 
-
-# ***************
-# Note: This file is generally not used; instead pass --config=... on the the command line!
-# ***************
-
-
-# In here, we just give default URLs and say that we ant the "unsecure" one by default (because
-# one may want to debug using tcpdump) The originating server may not even have DNS, so we give the IP.
+# In here, we just give default URLs and say that we want the "unsecure" one by default (because
+# one may want to debug using tcpdump) The originating server may not even have DNS, so we give
+# the IP.
 
 # url            = http://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
 # url            = https://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
 url              = http://148.251.129.56/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
 url              = https://148.251.129.56/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService?wsdl
-secure           = no
-# hostnameverify = yes
+secure           = yes
 # service        = ping
 # procedure      = foo
 # credentials    = USERNAME::PASSWORD

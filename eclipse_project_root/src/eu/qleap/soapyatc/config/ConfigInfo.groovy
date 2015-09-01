@@ -1,7 +1,7 @@
 package eu.qleap.soapyatc.config
 
 import static name.heavycarbon.checks.BasicChecks.*
-import name.heavycarbon.carpetbag.ResourceHelpGroovy;
+import name.heavycarbon.utils.ResourceHelpGroovy;
 import eu.qleap.soapyatc.Call;
 import eu.qleap.soapyatc.elements.AtpName
 import eu.qleap.soapyatc.elements.AtwsMap

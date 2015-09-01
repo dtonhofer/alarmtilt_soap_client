@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-import name.heavycarbon.carpetbag.FileInfo
-import name.heavycarbon.carpetbag.ResourceHelpGroovy
-import name.heavycarbon.carpetbag.ResourceInfo
-import name.heavycarbon.carpetbag.BooleanParser
+import name.heavycarbon.utils.BooleanParser
+import name.heavycarbon.utils.FileInfo;
+import name.heavycarbon.utils.ResourceHelpGroovy;
+import name.heavycarbon.utils.ResourceInfo;
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

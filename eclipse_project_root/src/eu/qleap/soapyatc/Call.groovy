@@ -7,10 +7,11 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.namespace.QName
 
-import name.heavycarbon.carpetbag.ResourceHelpGroovy
+import name.heavycarbon.utils.ResourceHelpGroovy;
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import v3.res.soap.webservice.alarmtilt.com.AlarmTILTRestrictedWebService
 import v3.res.soap.webservice.alarmtilt.com.AuthParam
@@ -383,7 +384,7 @@ public final class Call {
 			}
 			else {
 				if (ci.procedure != null) {
-					logger.warn("The service-to-call is ${serviceToCall} -- disregarding uneeded procedure to launch ${ci.procedure}")
+					logger.warn("The service-to-call is ${serviceToCall} -- disregarding unneeded procedure to launch ${ci.procedure}")
 				}
 			}
 		}
@@ -448,10 +449,19 @@ public final class Call {
 
 	public static void main(String[] args) {
 		Logger logger = LOGGER_main
+		//
+		// Redirects Java Util Logging (JUL) into SLF4J, with some overhead
+		// This operation does not print anything
+		//
+		SLF4JBridgeHandler.install();		
 		logger.info("============== NEW INVOCATION ==============")
 		boolean res
 		try {
 			res = realMain(args)
+		}
+		catch (Exception exe) {
+			logger.error("Caught Exception", exe)	
+			res = false
 		}
 		finally {
 			logger.info("============== TERMINATING with ${res} ==============")

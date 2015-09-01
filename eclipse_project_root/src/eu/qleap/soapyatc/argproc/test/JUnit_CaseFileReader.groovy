@@ -1,8 +1,8 @@
 package eu.qleap.soapyatc.argproc.test
 
 import static groovy.test.GroovyAssert.*
-import name.heavycarbon.carpetbag.ResourceHelpGroovy;
 import name.heavycarbon.checks.CheckFailedException
+import name.heavycarbon.utils.ResourceHelpGroovy;
 
 import org.junit.Test
 import org.slf4j.LoggerFactory
