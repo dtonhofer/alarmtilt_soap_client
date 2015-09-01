@@ -81,7 +81,8 @@ class ConfigInfoHelper {
 
 	/**
 	 * A string indicating a file or resource is given and our mission is to slurp the data into memory!
-	 * Or else, throw.
+	 * Or else, throw a ResourceNotFoundException 
+
 	 */
 
 	static List slurpConfig(String what,String encoding,List msgs) {

@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/jul-to-slf4j.jar"/>
 	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/log4j-over-slf4j.jar"/>
 	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/slf4j-api.jar"/>
+	<classpathentry kind="lib" path="/xtern_third_party_jars/mahoney/sysout-over-slf4j-1.0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

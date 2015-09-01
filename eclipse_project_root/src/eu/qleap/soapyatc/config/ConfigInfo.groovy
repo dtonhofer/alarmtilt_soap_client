@@ -120,7 +120,7 @@ class ConfigInfo {
 		this.credentials    = ConfigInfoHelper.override(high.credentials, low.credentials)
 		this.caseId         = ConfigInfoHelper.override(high.caseId, low.caseId)
 		this.casefile       = ConfigInfoHelper.override(high.casefile, low.casefile)
-		if (this.caseId != null) {
+		if (this.caseId == null) {
 			// only if case id is not set...
 			this.service   = ConfigInfoHelper.override(high.service, low.service)
 			this.procedure = ConfigInfoHelper.override(high.procedure, low.procedure)

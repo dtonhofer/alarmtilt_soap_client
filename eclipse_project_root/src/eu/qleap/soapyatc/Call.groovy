@@ -13,6 +13,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J;
 import v3.res.soap.webservice.alarmtilt.com.AlarmTILTRestrictedWebService
 import v3.res.soap.webservice.alarmtilt.com.AuthParam
 import v3.res.soap.webservice.alarmtilt.com.AuthType
@@ -174,7 +175,8 @@ public final class Call {
 				}
 			}
 			catch (Exception exe) {
-				logger.warn("While reading config named '${what}' -- disregarding this config",exe)
+				// do not print the whole stacktrace....
+				logger.warn("Failure reading config '${what}'. Message: ${exe.message}")
 			}
 		}
 		return res
@@ -229,11 +231,11 @@ public final class Call {
 			msgs.each { logger.error("Message from cmdline arg processing: ${it}") }
 		}
 		if (tailValues) {
-			tailValues.each { logger.error("Unused tail value in arguments: '${it}'") }
+			tailValues.each { logger.error("Unused tail value in arguments: '${it.txt}'") }
 		}
 		if (logger.isDebugEnabled()) {
 			result.each { k, v -> logger.debug("Command line argument: ${k} --> ${v}") }
-			tailValues.each { logger.debug("Command line tail value: '${it}'") }
+			tailValues.each { logger.debug("Command line tail value: '${it.txt}'") }
 		}
 		return [ (tag_result) : result, (tag_msgs) : msgs, (tag_tailvalues) : tailValues ]
 	}
@@ -361,7 +363,7 @@ public final class Call {
 	private static Map whatToCall(ConfigInfo ci) {
 		Logger logger = LOGGER_whatToCall
 		AtwsName serviceToCall
-		AtpName  procedureToLaunch
+		AtpName  procedureToLaunch		
 		if (ci.caseId != null) {
 			List msgs = []
 			logger.info("A case id ${ci.caseId} has been given; looking up translation in a case file...")
@@ -378,11 +380,13 @@ public final class Call {
 		}
 		else {
 			serviceToCall = ci.service
+			checkNotNull(serviceToCall,"No service to call has been given")
 			if (serviceToCall == LAUNCH) {
 				procedureToLaunch = ci.procedure
 				checkNotNull(ci.procedure, "The service-to-call is ${serviceToCall} but the procedure to launch has not been given. ${DO_THIS}")
 			}
 			else {
+				// serviceToCall should be PING but in the future may be something else
 				if (ci.procedure != null) {
 					logger.warn("The service-to-call is ${serviceToCall} -- disregarding unneeded procedure to launch ${ci.procedure}")
 				}
@@ -405,6 +409,10 @@ public final class Call {
 			assert pargsMsgs  != null
 			assert tailValues != null
  		}
+		//
+		// tail values containing only whitespace are skipped
+		//
+		tailValues = tailValues.findAll { !it.txt.trim().isEmpty() }
 		//
 		// If help demanded or an error occurred during command-line processing, print and exit
 		//
@@ -432,6 +440,13 @@ public final class Call {
 			serviceToCall     = wtc[tag_servicetocall]
 			procedureToLaunch = wtc[tag_proceduretolaunch]
 		}
+		logger.debug("serviceToCall = ${serviceToCall}, procedureToLaunch = ${procedureToLaunch}")
+		//
+		// The network stack writes debug info to STDOUT!
+		// capture it
+		SysOutOverSLF4J.sendSystemOutAndErrToSLF4J();
+		
+		
 		boolean res
 		switch (serviceToCall) {
 			case PING:

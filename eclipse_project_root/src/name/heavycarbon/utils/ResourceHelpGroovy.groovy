@@ -103,7 +103,10 @@ class ResourceHelpGroovy {
 		// the following call returns (null) if resource not found (instead of throwing)
 		//
 		InputStream is = classLoader.getResourceAsStream(fullyQualifiedResourceName.trim())
-		checkNotNull(is, "Could not find (fully qualified) resource named '{}'", fullyQualifiedResourceName)
+		//
+		// Thus we check
+		//
+		checkNotNull(is, "Resource '{}' could not be opened (may not exist)", fullyQualifiedResourceName);
 		//
 		// If we are here, loading the resource was successful!
 		//
@@ -120,10 +123,10 @@ class ResourceHelpGroovy {
 
 	static InputStream getStreamFromFile(File fileName) {
 		def logger = LOGGER_getStreamFromFile
-		checkNotNull(fileName, "file name")
-		checkTrue(fileName.exists(), "The file '{}' does not exist", fileName)
-		checkTrue(fileName.isFile(), "The file '{}' is not a 'normal' file", fileName)
-		checkTrue(fileName.canRead(), "The file '{}' is not readable", fileName)
+		checkNotNull(fileName, "file name") // a file CAN be only whitespace
+		checkTrue(fileName.exists(), "File '{}' does not exist", fileName)
+		checkTrue(fileName.isFile(), "File '{}' is not a 'normal' file", fileName)
+		checkTrue(fileName.canRead(), "File '{}' is not readable", fileName)
 		return new FileInputStream(fileName)
 	}
 

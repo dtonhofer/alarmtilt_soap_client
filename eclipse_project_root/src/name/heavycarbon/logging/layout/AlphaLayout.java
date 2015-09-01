@@ -28,6 +28,14 @@ import static name.heavycarbon.checks.BasicChecks.*;
  * 
  * See http://logback.qos.ch/manual/layouts.html
  * 
+ * Generally, in logback.xml, add:
+ * 
+ * <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+ *     <layout class="name.heavycarbon.logging.layout.AlphaLayout" />
+ * </encoder>
+ *
+ * inside an "appender" declaration.
+ * 
  * A log event is displayed in a 'strict-column' manner, i.e. the output is as 
  * follows, with fixed-width columns (which means that you have to have a 
  * -wide- screen or a small font):

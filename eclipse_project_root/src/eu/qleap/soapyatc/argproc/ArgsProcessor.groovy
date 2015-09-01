@@ -332,7 +332,7 @@ class ArgsProcessor {
 				//
 				// Just ignore this problem and feed "msgs". If there is anything in "msgs", main() will exit with error
 				//
-				msgs << "Unusable value '${arg.txt}' (it's not a boolean) -- skipping this"
+				msgs << "Unusable value '${arg.txt}' (expected a boolean, but this ain't one) -- skipping this"
 			}
 			state = State.FRESH
 			i++
