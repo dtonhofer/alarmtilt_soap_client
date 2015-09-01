@@ -6,7 +6,6 @@
 	<classpathentry exported="true" kind="con" path="GROOVY_DSL_SUPPORT"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="/xtern_third_party_jars/name.heavycarbon.checks/checks.jar" sourcepath="/xtern_third_party_jars/name.heavycarbon.checks/checks-src.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/name.heavycarbon.carpetbag"/>
 	<classpathentry kind="lib" path="/xtern_third_party_jars/ch.qos.logback/logback-classic.jar"/>
 	<classpathentry kind="lib" path="/xtern_third_party_jars/ch.qos.logback/logback-core.jar"/>
 	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/jcl-over-slf4j.jar"/>

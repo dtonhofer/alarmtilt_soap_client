@@ -1,0 +1,32 @@
+<!-- This is the default resource read by logback; it is generally not used; instead -->
+<!-- we configure the logback.xml via the command line using -Dlogback.configurationFile=/home/quux/logback.xml -->
+
+<configuration>
+
+  <!-- Inject a JVM shutdown hook for a clean shutdown! -->
+  
+  <shutdownHook/>
+
+  <!-- Use "STDOUT" appender if you want to write to STDOUT -->
+  
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+  
+    <encoder>
+      <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+    
+  </appender>
+        
+  <!-- Here we specify at which level and where to log in the logging hierarchy -->
+  <!-- The logging hierarchy generally corresponds to the class hierarchy, with the method name the last component -->
+  <!-- See http://logback.qos.ch/manual/configuration.html -->
+  
+  <root level="debug">
+    <appender-ref ref="STDOUT" />
+  </root>
+    
+  <!-- 
+  <logger name="foo.bar" level="INFO" />
+  -->
+   
+</configuration>

@@ -1,0 +1,1072 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="com.alarmtilt.webservice.soap.res.v3" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="ws-res-v3" targetNamespace="com.alarmtilt.webservice.soap.res.v3">
+  <wsdl:types>
+    <xs:schema xmlns:tns="com.alarmtilt.webservice.soap.res.v3" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified" targetNamespace="com.alarmtilt.webservice.soap.res.v3" version="1.0">
+      <xs:element name="exportAgenda" type="tns:exportAgenda"/>
+      <xs:element name="exportAgendaResponse" type="tns:exportAgendaResponse"/>
+      <xs:element name="getContactUser" type="tns:getContactUser"/>
+      <xs:element name="getContactUserResponse" type="tns:getContactUserResponse"/>
+      <xs:element name="importAgenda" type="tns:importAgenda"/>
+      <xs:element name="importAgendaResponse" type="tns:importAgendaResponse"/>
+      <xs:element name="launchProcedure" type="tns:launchProcedure"/>
+      <xs:element name="launchProcedureResponse" type="tns:launchProcedureResponse"/>
+      <xs:element name="listContact" type="tns:listContact"/>
+      <xs:element name="listContactResponse" type="tns:listContactResponse"/>
+      <xs:element name="listContactUser" type="tns:listContactUser"/>
+      <xs:element name="listContactUserResponse" type="tns:listContactUserResponse"/>
+      <xs:element name="listSubscription" type="tns:listSubscription"/>
+      <xs:element name="listSubscriptionResponse" type="tns:listSubscriptionResponse"/>
+      <xs:element name="pingService" type="tns:pingService"/>
+      <xs:element name="pingServiceResponse" type="tns:pingServiceResponse"/>
+      <xs:element name="requestSubscription" type="tns:requestSubscription"/>
+      <xs:element name="requestSubscriptionResponse" type="tns:requestSubscriptionResponse"/>
+      <xs:element name="sendNotification" type="tns:sendNotification"/>
+      <xs:element name="sendNotificationResponse" type="tns:sendNotificationResponse"/>
+      <xs:element name="validateSubscription" type="tns:validateSubscription"/>
+      <xs:element name="validateSubscriptionResponse" type="tns:validateSubscriptionResponse"/>
+      <xs:complexType name="sendNotification">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="sendNotificationParam" type="tns:sendNotificationParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="authParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authCustomRoleId" type="xs:string"/>
+          <xs:element minOccurs="0" name="authDn" type="xs:string"/>
+          <xs:element minOccurs="0" name="authPw" type="xs:string"/>
+          <xs:element minOccurs="0" name="authRole" type="tns:authRoleEnum"/>
+          <xs:element minOccurs="0" name="authType" type="tns:authType"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="sendNotificationParam">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="addresses" nillable="true" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="attachments" nillable="true" type="tns:wsAttachment"/>
+          <xs:element minOccurs="0" name="body" type="xs:string"/>
+          <xs:element minOccurs="0" name="language" type="tns:supportedLanguage"/>
+          <xs:element minOccurs="0" name="media" type="tns:mediaType"/>
+          <xs:element minOccurs="0" name="subject" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="wsAttachment">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="attachmentContent" type="xs:base64Binary"/>
+          <xs:element minOccurs="0" name="attachmentMimeType" type="xs:string"/>
+          <xs:element minOccurs="0" name="attachmentName" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="sendNotificationResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="sendNotificationResult" type="tns:sendNotificationResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="sendNotificationResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="notifications" nillable="true" type="tns:notification"/>
+          <xs:element minOccurs="0" name="result" type="tns:sendNotificationResultEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="notification">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="body" type="xs:string"/>
+          <xs:element minOccurs="0" name="contactResponse" type="tns:contactResponse"/>
+          <xs:element minOccurs="0" name="creationDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="id" type="xs:int"/>
+          <xs:element minOccurs="0" name="injectionDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="media" type="tns:mediaType"/>
+          <xs:element minOccurs="0" name="messageType" type="tns:messageType"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="notificationStatus" type="tns:notificationStatus"/>
+          <xs:element minOccurs="0" name="receiverAddress" type="xs:string"/>
+          <xs:element minOccurs="0" name="receiverLabel" type="xs:string"/>
+          <xs:element minOccurs="0" name="statusRead" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="subject" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contactResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="latestResponseDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="qualifiedResponse" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="replies" nillable="true" type="tns:reply"/>
+          <xs:element minOccurs="0" name="replyValue" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="reply">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="isTooLate" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="media" type="tns:mediaType"/>
+          <xs:element minOccurs="0" name="replyDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="replyValue" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="pingService">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="pingServiceResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="pingServiceResult" type="tns:pingServiceResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="pingServiceResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="result" type="tns:pingServiceResultEnum"/>
+          <xs:element minOccurs="0" name="serviceAccessDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="stage" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="importAgenda">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="importAgendaParam" type="tns:importAgendaParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="importAgendaParam">
+        <xs:sequence>
+          <xs:element name="clearAgenda" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="icalText" type="xs:string"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="importAgendaResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="importAgendaResult" type="tns:importAgendaResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="importAgendaResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="result" type="tns:importAgendaResultEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getContactUser">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="getContactUserParam" type="tns:getContactUserParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getContactUserParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="id" type="xs:int"/>
+          <xs:element minOccurs="0" name="tokenId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getContactUserResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="getContactUserResult" type="tns:getContactUserResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getContactUserResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="contactUser" type="tns:contactUser"/>
+          <xs:element minOccurs="0" name="message" type="xs:string"/>
+          <xs:element minOccurs="0" name="result" type="tns:getContactUserResultEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contactUser">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="contactUserAddressPostal" type="tns:contactUserAddressPostal"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="contactUserAttributes" nillable="true" type="tns:contactUserAttribute"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="contactUserMedias" nillable="true" type="tns:contactUserMedia"/>
+          <xs:element minOccurs="0" name="creationDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="customerName" type="xs:string"/>
+          <xs:element minOccurs="0" name="id" type="xs:int"/>
+          <xs:element minOccurs="0" name="isSubscriber" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="latestSubscriptionTokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="managementUnitName" type="xs:string"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="tokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="userFirstName" type="xs:string"/>
+          <xs:element minOccurs="0" name="userLastName" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contactUserAddressPostal">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="city" type="xs:string"/>
+          <xs:element minOccurs="0" name="country" type="xs:string"/>
+          <xs:element minOccurs="0" name="postalCode" type="xs:string"/>
+          <xs:element minOccurs="0" name="street" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contactUserAttribute">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="value" type="xs:string"/>
+          <xs:element minOccurs="0" name="variable" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contactUserMedia">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="address" type="xs:string"/>
+          <xs:element name="confidential" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="location" type="tns:mediaOrganisationalType"/>
+          <xs:element minOccurs="0" name="media" type="tns:mediaType"/>
+          <xs:element minOccurs="0" name="mediaDeviceType" type="tns:mediaDeviceType"/>
+          <xs:element name="timeoutInterval" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="launchProcedure">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="launchProcedureParam" type="tns:launchProcedureParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="launchProcedureParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="procedureName" type="xs:string"/>
+          <xs:element minOccurs="0" name="procedureOwner" type="tns:contactUser"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="steps" nillable="true" type="tns:step"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="variables" nillable="true" type="tns:procedureVariable"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="step">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="alertSchemeName" type="xs:string"/>
+          <xs:element minOccurs="0" name="alertSchemeType" type="tns:alertSchemeType"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="attachments" nillable="true" type="tns:wsAttachment"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="listOfContacts" nillable="true" type="tns:stepContact"/>
+          <xs:element minOccurs="0" name="messageType" type="tns:messageType"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="runTimeout" type="xs:int"/>
+          <xs:element minOccurs="0" name="runTimeoutUnit" type="tns:timeUnitEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="stepContact">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="id" type="xs:int"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="procedureVariable">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="value" type="xs:string"/>
+          <xs:element minOccurs="0" name="valueBoolean" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="valueDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="valueInteger" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="launchProcedureResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="launchProcedureResult" type="tns:launchProcedureResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="launchProcedureResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="procedureInstance" type="tns:launchProcedureInstance"/>
+          <xs:element minOccurs="0" name="result" type="tns:launchProcedureResultEnum"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="resultInfos" nillable="true" type="tns:launchProcedureResultInfo"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="launchProcedureInstance">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="id" type="xs:int"/>
+          <xs:element minOccurs="0" name="launchingDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="launchProcedureResultInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="relatedCollectionIndex" type="xs:int"/>
+          <xs:element minOccurs="0" name="result" type="tns:launchProcedureResultEnum"/>
+          <xs:element minOccurs="0" name="resultRelatedData" type="xs:string"/>
+          <xs:element minOccurs="0" name="severity" type="tns:severityEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listSubscription">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="listSubscriptionParam" type="tns:listSubscriptionParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listSubscriptionParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="subscriptionFilter" type="tns:listSubscriptionFilter"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listSubscriptionFilter">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="dateFrom" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="dateTo" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="email" type="xs:string"/>
+          <xs:element minOccurs="0" name="firstname" type="xs:string"/>
+          <xs:element minOccurs="0" name="lastname" type="xs:string"/>
+          <xs:element minOccurs="0" name="modificationDateFrom" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="modificationDateTo" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="pageIndex" type="xs:int"/>
+          <xs:element minOccurs="0" name="pageSize" type="xs:int"/>
+          <xs:element minOccurs="0" name="phoneNumberSms" type="xs:string"/>
+          <xs:element minOccurs="0" name="phoneNumberVoice" type="xs:string"/>
+          <xs:element minOccurs="0" name="subscriberTokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="subscriptionState" type="tns:subscriptionState"/>
+          <xs:element minOccurs="0" name="subscriptionValidationDateFrom" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="subscriptionValidationDateTo" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="tokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="unsubscriptionValidationDateFrom" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="unsubscriptionValidationDateTo" type="xs:dateTime"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listSubscriptionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="listSubscriptionResult" type="tns:listSubscriptionResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listSubscriptionResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string"/>
+          <xs:element minOccurs="0" name="result" type="tns:listSubscriptionResultEnum"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="subscriptions" nillable="true" type="tns:subscription"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="subscription">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="creationDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="email" type="xs:string"/>
+          <xs:element minOccurs="0" name="firstname" type="xs:string"/>
+          <xs:element minOccurs="0" name="id" type="xs:int"/>
+          <xs:element minOccurs="0" name="lastname" type="xs:string"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="phoneNumberSms" type="xs:string"/>
+          <xs:element minOccurs="0" name="phoneNumberVoice" type="xs:string"/>
+          <xs:element minOccurs="0" name="subscriberTokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="subscriptionDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="subscriptionKeySendingDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="subscriptionKeyValidDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="subscriptionState" type="tns:subscriptionState"/>
+          <xs:element minOccurs="0" name="tokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="transientDescription" type="xs:string"/>
+          <xs:element minOccurs="0" name="unsubscriptionDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="unsubscriptionKeySendingDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="unsubscriptionKeyValidDate" type="xs:dateTime"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportAgenda">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="exportAgendaParam" type="tns:exportAgendaParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportAgendaParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportAgendaResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="exportAgendaResult" type="tns:exportAgendaResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportAgendaResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="icalText" type="xs:string"/>
+          <xs:element minOccurs="0" name="result" type="tns:exportAgendaResultEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="validateSubscription">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="validationSubscriptionParam" type="tns:validateSubscriptionParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="validateSubscriptionParam">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="addresses" nillable="true" type="tns:address"/>
+          <xs:element minOccurs="0" name="subscriptionKey" type="xs:string"/>
+          <xs:element minOccurs="0" name="subscriptionTokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="suscriberFirstName" type="xs:string"/>
+          <xs:element minOccurs="0" name="suscriberLastName" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="address">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="action" type="tns:addressActionType"/>
+          <xs:element minOccurs="0" name="address" type="xs:string"/>
+          <xs:element minOccurs="0" name="location" type="tns:mediaOrganisationalType"/>
+          <xs:element minOccurs="0" name="media" type="tns:mediaType"/>
+          <xs:element minOccurs="0" name="postalCity" type="xs:string"/>
+          <xs:element minOccurs="0" name="postalCode" type="xs:string"/>
+          <xs:element minOccurs="0" name="postalCountry" type="xs:string"/>
+          <xs:element minOccurs="0" name="postalStreet" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="validateSubscriptionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="validateSubscriptionResult" type="tns:validateSubscriptionResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="validateSubscriptionResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="result" type="tns:validateSubscriptionResultEnum"/>
+          <xs:element minOccurs="0" name="subscription" type="tns:subscription"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactUser">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="listContactUserParam" type="tns:listContactUserParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactUserParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="dynamicSelection" type="tns:contactDynamicSelection"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contactDynamicSelection">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="conditionEvaluationMode" type="tns:conditionEvaluationMode"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="conditions" nillable="true" type="tns:contactDynamicSelectionCondition"/>
+          <xs:element minOccurs="0" name="expression" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contactDynamicSelectionCondition">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="extendedToAuthorizedMUs" type="xs:string"/>
+          <xs:element minOccurs="0" name="variableKey" type="xs:string"/>
+          <xs:element minOccurs="0" name="variableOp" type="tns:variableFilterOperator"/>
+          <xs:element minOccurs="0" name="variableValue" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactUserResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="listContactUserResult" type="tns:listContactUserResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactUserResult">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="contactUsers" nillable="true" type="tns:contactUser"/>
+          <xs:element minOccurs="0" name="message" type="xs:string"/>
+          <xs:element minOccurs="0" name="result" type="tns:listContactUserResultEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContact">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="listContactParam" type="tns:listContactParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="listContactFilter" type="tns:listContactFilter"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactFilter">
+        <xs:sequence>
+          <xs:element name="filterContactDynamicSelection" type="xs:boolean"/>
+          <xs:element name="filterContactGroupFunc" type="xs:boolean"/>
+          <xs:element name="filterContactGroupOrg" type="xs:boolean"/>
+          <xs:element name="filterContactLink" type="xs:boolean"/>
+          <xs:element name="filterContactUser" type="xs:boolean"/>
+          <xs:element name="filterContactUserWithAuth" type="xs:boolean"/>
+          <xs:element name="filterSubscriber" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="namefilterOp" type="tns:filterOpType"/>
+          <xs:element minOccurs="0" name="pageIndex" type="xs:int"/>
+          <xs:element minOccurs="0" name="pageSize" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="listContactResult" type="tns:listContactResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="listContactResult">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="list" nillable="true" type="tns:contact"/>
+          <xs:element minOccurs="0" name="result" type="tns:listContactResultEnum"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="contact">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="creationDate" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="id" type="xs:int"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="transientDescription" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="requestSubscription">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="authParam" type="tns:authParam"/>
+          <xs:element minOccurs="0" name="requestSubscriptionParam" type="tns:requestSubscriptionParam"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="requestSubscriptionParam">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="action" type="tns:subscriptionActionType"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="addresses" nillable="true" type="tns:address"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="attributes" nillable="true" type="tns:attributeVariableValue"/>
+          <xs:element minOccurs="0" name="language" type="tns:supportedLanguage"/>
+          <xs:element minOccurs="0" name="subscriptionTokenId" type="xs:string"/>
+          <xs:element minOccurs="0" name="suscriberFirstName" type="xs:string"/>
+          <xs:element minOccurs="0" name="suscriberLastName" type="xs:string"/>
+          <xs:element name="validationRequired" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="attributeVariableValue">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="action" type="tns:attributeVariableActionType"/>
+          <xs:element minOccurs="0" name="value" type="xs:string"/>
+          <xs:element minOccurs="0" name="variable" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="requestSubscriptionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="requestSubscriptionResult" type="tns:requestSubscriptionResult"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="requestSubscriptionResult">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="result" type="tns:requestSubscriptionResultEnum"/>
+          <xs:element minOccurs="0" name="subscription" type="tns:subscription"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:simpleType name="authRoleEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="DESTINATION"/>
+          <xs:enumeration value="ADMINISTRATOR"/>
+          <xs:enumeration value="AUDITOR"/>
+          <xs:enumeration value="ACCESS_MANAGER"/>
+          <xs:enumeration value="DIRECTORY_MANAGER"/>
+          <xs:enumeration value="PROCEDURE_LAUNCHER"/>
+          <xs:enumeration value="PROCEDURE_MANAGER"/>
+          <xs:enumeration value="CUSTOM_ROLE"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="authType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="BASIC"/>
+          <xs:enumeration value="CERT"/>
+          <xs:enumeration value="EMAIL"/>
+          <xs:enumeration value="PHONE"/>
+          <xs:enumeration value="HEX64"/>
+          <xs:enumeration value="SNMP"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="supportedLanguage">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="FR"/>
+          <xs:enumeration value="EN"/>
+          <xs:enumeration value="DE"/>
+          <xs:enumeration value="LU"/>
+          <xs:enumeration value="DU"/>
+          <xs:enumeration value="DK"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="mediaType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="SMS"/>
+          <xs:enumeration value="EMAIL"/>
+          <xs:enumeration value="POSTAL"/>
+          <xs:enumeration value="VOICE"/>
+          <xs:enumeration value="FAX"/>
+          <xs:enumeration value="IM"/>
+          <xs:enumeration value="WEB"/>
+          <xs:enumeration value="SMARTPHONE"/>
+          <xs:enumeration value="GENERIC"/>
+          <xs:enumeration value="FORM"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="messageType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="INFO"/>
+          <xs:enumeration value="ALERT"/>
+          <xs:enumeration value="CONFIRM"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="notificationStatus">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="IN_PROGRESS"/>
+          <xs:enumeration value="SENT"/>
+          <xs:enumeration value="DELIVERED"/>
+          <xs:enumeration value="READ"/>
+          <xs:enumeration value="REPLIED"/>
+          <xs:enumeration value="FAILED"/>
+          <xs:enumeration value="NOT_SENT"/>
+          <xs:enumeration value="NOT_DELIVERED"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="sendNotificationResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="PARAM_REQUIRED"/>
+          <xs:enumeration value="MEDIA_NOT_SET"/>
+          <xs:enumeration value="LANGUAGE_NOT_SET"/>
+          <xs:enumeration value="SUBJECT_NOT_SET"/>
+          <xs:enumeration value="BODY_NOT_SET"/>
+          <xs:enumeration value="EMPTY_ADDRESS_LIST"/>
+          <xs:enumeration value="INVALID_ADDRESS_LIST"/>
+          <xs:enumeration value="INVALID_ATTACHMENT"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="pingServiceResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="importAgendaResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+          <xs:enumeration value="NAME_REQUIRED"/>
+          <xs:enumeration value="AGENDA_DOES_NOT_EXISTS"/>
+          <xs:enumeration value="INVALID_ICAL_FORMAT"/>
+          <xs:enumeration value="SOME_ATTENDEES_NOT_EXIST"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="mediaOrganisationalType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="MEDIA_ORG_PRO"/>
+          <xs:enumeration value="MEDIA_ORG_HOME"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="mediaDeviceType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="IOS"/>
+          <xs:enumeration value="ANDROID"/>
+          <xs:enumeration value="BLACKBERRY"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="getContactUserResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="PARAM_REQUIRED"/>
+          <xs:enumeration value="NOT_FOUND"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="alertSchemeType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="PERSONAL"/>
+          <xs:enumeration value="GLOBAL"/>
+          <xs:enumeration value="MEDIA_SELECTION"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="timeUnitEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="MINUTE"/>
+          <xs:enumeration value="HOUR"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="launchProcedureResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+          <xs:enumeration value="PARAM_REQUIRED"/>
+          <xs:enumeration value="PROCEDURE_DEFINITION_NOT_FOUND"/>
+          <xs:enumeration value="PARAM_SIZE_EXCEEDED"/>
+          <xs:enumeration value="AT_LEAST_ONE_CONTACT_WITH_SMS_MEDIA_REQUIRED"/>
+          <xs:enumeration value="AT_LEAST_ONE_CONTACT_WITH_EMAIL_MEDIA_REQUIRED"/>
+          <xs:enumeration value="AT_LEAST_ONE_CONTACT_WITH_VOICE_MEDIA_REQUIRED"/>
+          <xs:enumeration value="AT_LEAST_ONE_CONTACT_WITH_FAX_MEDIA_REQUIRED"/>
+          <xs:enumeration value="AT_LEAST_ONE_CONTACT_WITH_WEB_MEDIA_REQUIRED"/>
+          <xs:enumeration value="AT_LEAST_ONE_CONTACT_WITH_SMARTPHONE_MEDIA_REQUIRED"/>
+          <xs:enumeration value="MAX_PROC_IN_LAUNCHED_STATE_COUNT_REACHED"/>
+          <xs:enumeration value="PROCEDURE_DEFINITION_NOT_EXECUTABLE"/>
+          <xs:enumeration value="PARAM_STEP_NOT_EXIST_WITH_NAME"/>
+          <xs:enumeration value="PARAM_STEP_NAME_NOT_SET"/>
+          <xs:enumeration value="PARAM_STEP_CONTACT_ID_OR_NAME_NOT_SET"/>
+          <xs:enumeration value="PARAM_STEP_CONTACT_NOT_EXIST_WITH_ID"/>
+          <xs:enumeration value="PARAM_STEP_CONTACT_NOT_EXIST_WITH_NAME"/>
+          <xs:enumeration value="PARAM_VARIABLE_NAME_NOT_SET"/>
+          <xs:enumeration value="PARAM_VARIABLE_NOT_EXIST_WITH_NAME"/>
+          <xs:enumeration value="PARAM_VARIABLE_MANDATORY"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_LIST"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_RADIO"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_NUMBER"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_CHECKBOX"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_DATE"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_DATE_TIME"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_TIME"/>
+          <xs:enumeration value="PARAM_VARIABLE_VALUE_INVALID_NESTED_LIST"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="severityEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="ERROR"/>
+          <xs:enumeration value="WARN"/>
+          <xs:enumeration value="INFO"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="subscriptionState">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="SUBSCRIPTION_REQUESTED"/>
+          <xs:enumeration value="SUBSCRIPTION_VALIDATED"/>
+          <xs:enumeration value="UNSUBSCRIPTION_REQUESTED"/>
+          <xs:enumeration value="UNSUBSCRIPTION_VALIDATED"/>
+          <xs:enumeration value="CONTACT_DELETED"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="listSubscriptionResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="PARAM_REQUIRED"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="exportAgendaResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+          <xs:enumeration value="NAME_REQUIRED"/>
+          <xs:enumeration value="AGENDA_DOES_NOT_EXISTS"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="addressActionType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="ADD"/>
+          <xs:enumeration value="REMOVE"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="validateSubscriptionResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="INVALID_SUBSCRIPTION_KEY"/>
+          <xs:enumeration value="SUBSCRIPTION_ID_OR_MEDIA_REQUIRED"/>
+          <xs:enumeration value="SUBSCRIPTION_NOT_FOUND"/>
+          <xs:enumeration value="SUBSCRIPTION_ALREADY_IN_STATE_VALIDATED"/>
+          <xs:enumeration value="SUBSCRIPTION_KEY_EXPIRED"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+          <xs:enumeration value="PARAM_REQUIRED"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="conditionEvaluationMode">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="INTERSECTION"/>
+          <xs:enumeration value="UNION"/>
+          <xs:enumeration value="EXPRESSION"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="variableFilterOperator">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="FILTER_OP_STARTS_WITH"/>
+          <xs:enumeration value="FILTER_OP_CONTAINS"/>
+          <xs:enumeration value="FILTER_OP_EQUALS"/>
+          <xs:enumeration value="FILTER_OP_NOT_EQUALS"/>
+          <xs:enumeration value="FILTER_OP_LESS_EQUALS"/>
+          <xs:enumeration value="FILTER_OP_LESS_THAN"/>
+          <xs:enumeration value="FILTER_OP_GREAT_EQUALS"/>
+          <xs:enumeration value="FILTER_OP_GREAT_THAN"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="listContactUserResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="PARAM_REQUIRED"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="filterOpType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="STARTS_WITH"/>
+          <xs:enumeration value="CONTAINS"/>
+          <xs:enumeration value="EQUALS"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="listContactResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="FILTER_REQUIRED"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="subscriptionActionType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="NEW"/>
+          <xs:enumeration value="UPDATE"/>
+          <xs:enumeration value="REMOVE"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="attributeVariableActionType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="ADD"/>
+          <xs:enumeration value="REMOVE"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="requestSubscriptionResultEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="OK"/>
+          <xs:enumeration value="AUTHENTICATION_ERROR"/>
+          <xs:enumeration value="SUBSCRIPTION_PARAMETER_REQUIRED"/>
+          <xs:enumeration value="FIRSTNAME_REQUIRED"/>
+          <xs:enumeration value="LASTNAME_REQUIRED"/>
+          <xs:enumeration value="AT_LEAST_ONE_MEDIA_REQUIRED"/>
+          <xs:enumeration value="SUBSCRIPTION_EXISTS_WITH_SAME_NAME"/>
+          <xs:enumeration value="SUBSCRIPTION_EXISTS_WITH_ONE_OF_ADDRESS"/>
+          <xs:enumeration value="SUBSCRIBER_NOT_EXISTS"/>
+          <xs:enumeration value="AUTHORIZATION_ERROR"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="validateSubscriptionResponse">
+    <wsdl:part element="tns:validateSubscriptionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pingService">
+    <wsdl:part element="tns:pingService" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listContact">
+    <wsdl:part element="tns:listContact" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="sendNotification">
+    <wsdl:part element="tns:sendNotification" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="validateSubscription">
+    <wsdl:part element="tns:validateSubscription" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="exportAgendaResponse">
+    <wsdl:part element="tns:exportAgendaResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getContactUserResponse">
+    <wsdl:part element="tns:getContactUserResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getContactUser">
+    <wsdl:part element="tns:getContactUser" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listSubscriptionResponse">
+    <wsdl:part element="tns:listSubscriptionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listContactResponse">
+    <wsdl:part element="tns:listContactResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="importAgendaResponse">
+    <wsdl:part element="tns:importAgendaResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="importAgenda">
+    <wsdl:part element="tns:importAgenda" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="sendNotificationResponse">
+    <wsdl:part element="tns:sendNotificationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="requestSubscription">
+    <wsdl:part element="tns:requestSubscription" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listContactUserResponse">
+    <wsdl:part element="tns:listContactUserResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listSubscription">
+    <wsdl:part element="tns:listSubscription" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="exportAgenda">
+    <wsdl:part element="tns:exportAgenda" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="requestSubscriptionResponse">
+    <wsdl:part element="tns:requestSubscriptionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="listContactUser">
+    <wsdl:part element="tns:listContactUser" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pingServiceResponse">
+    <wsdl:part element="tns:pingServiceResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="launchProcedure">
+    <wsdl:part element="tns:launchProcedure" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="launchProcedureResponse">
+    <wsdl:part element="tns:launchProcedureResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="AlarmTILTRestrictedWebService">
+    <wsdl:operation name="sendNotification">
+      <wsdl:input message="tns:sendNotification" name="sendNotification">
+    </wsdl:input>
+      <wsdl:output message="tns:sendNotificationResponse" name="sendNotificationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="pingService">
+      <wsdl:input message="tns:pingService" name="pingService">
+    </wsdl:input>
+      <wsdl:output message="tns:pingServiceResponse" name="pingServiceResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="importAgenda">
+      <wsdl:input message="tns:importAgenda" name="importAgenda">
+    </wsdl:input>
+      <wsdl:output message="tns:importAgendaResponse" name="importAgendaResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getContactUser">
+      <wsdl:input message="tns:getContactUser" name="getContactUser">
+    </wsdl:input>
+      <wsdl:output message="tns:getContactUserResponse" name="getContactUserResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="launchProcedure">
+      <wsdl:input message="tns:launchProcedure" name="launchProcedure">
+    </wsdl:input>
+      <wsdl:output message="tns:launchProcedureResponse" name="launchProcedureResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="listSubscription">
+      <wsdl:input message="tns:listSubscription" name="listSubscription">
+    </wsdl:input>
+      <wsdl:output message="tns:listSubscriptionResponse" name="listSubscriptionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="exportAgenda">
+      <wsdl:input message="tns:exportAgenda" name="exportAgenda">
+    </wsdl:input>
+      <wsdl:output message="tns:exportAgendaResponse" name="exportAgendaResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="validateSubscription">
+      <wsdl:input message="tns:validateSubscription" name="validateSubscription">
+    </wsdl:input>
+      <wsdl:output message="tns:validateSubscriptionResponse" name="validateSubscriptionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="listContactUser">
+      <wsdl:input message="tns:listContactUser" name="listContactUser">
+    </wsdl:input>
+      <wsdl:output message="tns:listContactUserResponse" name="listContactUserResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="listContact">
+      <wsdl:input message="tns:listContact" name="listContact">
+    </wsdl:input>
+      <wsdl:output message="tns:listContactResponse" name="listContactResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="requestSubscription">
+      <wsdl:input message="tns:requestSubscription" name="requestSubscription">
+    </wsdl:input>
+      <wsdl:output message="tns:requestSubscriptionResponse" name="requestSubscriptionResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ws-res-v3SoapBinding" type="tns:AlarmTILTRestrictedWebService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="sendNotification">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="sendNotification">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="sendNotificationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="pingService">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="pingService">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="pingServiceResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="importAgenda">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="importAgenda">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="importAgendaResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getContactUser">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getContactUser">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getContactUserResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="launchProcedure">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="launchProcedure">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="launchProcedureResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="exportAgenda">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="exportAgenda">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="exportAgendaResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="listSubscription">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="listSubscription">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="listSubscriptionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="validateSubscription">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="validateSubscription">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="validateSubscriptionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="listContact">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="listContact">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="listContactResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="listContactUser">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="listContactUser">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="listContactUserResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="requestSubscription">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="requestSubscription">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="requestSubscriptionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ws-res-v3">
+    <wsdl:port binding="tns:ws-res-v3SoapBinding" name="AlarmTILTRestrictedWebServicePort">
+      <soap:address location="http://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

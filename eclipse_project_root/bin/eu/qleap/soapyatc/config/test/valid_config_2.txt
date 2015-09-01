@@ -1,0 +1,24 @@
+# This is just a test file
+# Note that we can list a number of URLs with different schemes (https/https)
+# If there are several URLs with the same scheme, the URL last encountered is used
+# This also applies to values: the value last encountered is used
+# Credentials must be given as USERNAME::PASSWORD , the "::" is the separator
+#
+# The following key-value pairs exist:
+#
+# url            = One of possibly several WSDL URLs to contact 
+# secure         = boolean (yes/no, true/false etc), if yes, preferentially use the "https" scheme
+#                  should be true (the default)
+# hostnameverify = verify the remote hostname against the certificate if https is used
+#                  should be true (the default)
+# service        = service to call; allowed are "ping" and "launch"
+# procedure      = in case of "launch" service, tghe procedure to launch
+# credentials    = credentials to give to remote server; format is always USERNAME::PASSWORD
+
+url             = https://x.y.com/hello1?wsdl
+url             = https://x.y.com/hello2?wsdl
+unused          = XXX
+secure          = no
+secure          = no
+credentials     = USERNAME::
+caseId          = 
