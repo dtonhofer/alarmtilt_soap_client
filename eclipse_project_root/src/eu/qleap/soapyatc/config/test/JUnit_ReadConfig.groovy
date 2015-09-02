@@ -22,7 +22,7 @@ class JUnit_ReadConfig {
 		assertEquals([:],ci.uriMap)
 		assertEquals(true,ci.secure)
 		assertEquals(true,ci.hostnameverify)
-		assertEquals(AtwsMap.lookup('ping').name, ci.service)
+		assertEquals(AtwsMap.makeName('ping'), AtwsMap.makeName(ci.service))
 		assertNull(ci.procedure)
 		assertNull(ci.credentials)
 		assertNull(ci.caseId)

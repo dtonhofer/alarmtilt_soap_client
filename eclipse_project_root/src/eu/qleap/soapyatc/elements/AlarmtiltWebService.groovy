@@ -117,6 +117,23 @@ abstract class AtwsMap {
 	}
 
 	/**
+	 * Making a name from a string (if possible). If not possible, return null
+	 */
+
+	static AtwsName makeNameWithNullOnFailure(String x) {
+		if (x == null) {
+			return null
+		}
+		AtwsDesc d = lookup(x, false, false)
+		if (!d) {
+			return null
+		}
+		else {
+			return d.name
+		}
+	}
+	
+	/**
 	 * Lookup; Always throws if null is passed, but the other cases can be controlled
 	 */
 

@@ -55,12 +55,12 @@ class ArgsPreprocessor {
 						res << new Option('help')
 					}
 					/*
-					else if (st =~ /^v+$/) {
-						res << new Option("verbose")
-						// the value is the string representation of the integer giving the number of "v"
-						res << new Value("${st.length()}",wasAttached)
-					}
-					*/
+					 else if (st =~ /^v+$/) {
+					 res << new Option("verbose")
+					 // the value is the string representation of the integer giving the number of "v"
+					 res << new Value("${st.length()}",wasAttached)
+					 }
+					 */
 					else {
 						msgs << "Short option '${it}' not recognized (only know about -h ... skipping this!"
 					}

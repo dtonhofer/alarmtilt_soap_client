@@ -37,7 +37,7 @@ class ConfigInfoHelper {
 	private static final Pattern ATTVALPAT = ~/^\s*(\w+)\s*=\s*(.*?)\s*($|#)/
 
 	private Helpers() {
-		cannotHappen("Class cannot be instantiated");
+		cannotHappen("Class cannot be instantiated")
 	}
 
 	/**
@@ -82,7 +82,6 @@ class ConfigInfoHelper {
 	/**
 	 * A string indicating a file or resource is given and our mission is to slurp the data into memory!
 	 * Or else, throw a ResourceNotFoundException 
-
 	 */
 
 	static List slurpConfig(String what,String encoding,List msgs) {
@@ -223,7 +222,7 @@ class ConfigInfoHelper {
 		}
 		return res
 	}
-	
+
 	/**
 	 * Here we actually apply the interpretation.
 	 * Missing values and unexpected data after "=" generally lead to exceptions ("instaFail")

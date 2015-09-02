@@ -32,12 +32,12 @@ class ArgsProcessor {
 	 * Tags used internally for passing values around
 	 */
 
-	final static tag_result        = 'result'
-	final static tag_tailvalues    = 'tailvalues'
-
-	final static tag_new_i         = 'new_i'
-	final static tag_new_state     = 'new_state'
-	final static tag_openoptionstr = 'openoptionstr'
+	enum TagA {
+		result, tailvalues
+	}
+	enum TagB {
+		new_i, new_state, openoptionstr
+	}
 
 	/**
 	 * Options which may be found on the command line
@@ -56,6 +56,7 @@ class ArgsProcessor {
 	final static String OPTION_HELP       = 'help'
 	final static String OPTION_CASEID     = 'case'
 	final static String OPTION_CASEFILE   = 'casefile'
+	final static String OPTION_WSDLFILE   = 'wsdlfile'
 
 	/**
 	 * States of the argument processor
@@ -89,10 +90,12 @@ class ArgsProcessor {
 	 * OPTION_URL        => map mapping the scheme (http/https) to an Uri instance
 	 * OPTION_SECURE     => a boolean
 	 * OPTION_HNV        => a boolean 
-	 * OPTION_SERVICE    => a AtwsName
+	 * OPTION_SERVICE    => a String
 	 * OPTION_PROCEDURE  => a AtpName
 	 * OPTION_CREDS      => a Credentials structure
 	 * OPTION_HELP       => a boolean
+	 * OPTION_CASEFILE   => a String
+	 * OPTION_WSDLFILE   => a String
 	 */
 
 	static Map process(String[] args, List msgs) {
@@ -121,9 +124,9 @@ class ArgsProcessor {
 				}
 				else {
 					def mm = handleFresh(argList[i], i, argList, tailValues, msgs)
-					i = mm[(tag_new_i)]
-					state = mm[(tag_new_state)]
-					openOptionStr = mm[(tag_openoptionstr)]
+					i = mm[TagB.new_i]
+					state = mm[TagB.new_state]
+					openOptionStr = mm[TagB.openoptionstr]
 				}
 			}
 			else if (State.EXPECT_ONE_ARG == state) {
@@ -132,8 +135,8 @@ class ArgsProcessor {
 				}
 				else {
 					def mm = handleExpectOneArg(argList[i], i, result, openOptionStr, msgs)
-					i = mm[(tag_new_i)]
-					state = mm[(tag_new_state)]
+					i = mm[TagB.new_i]
+					state = mm[TagB.new_state]
 				}
 			}
 			else if (State.EXPECT_OPTIONAL_BOOLEAN_ARG == state) {
@@ -142,8 +145,8 @@ class ArgsProcessor {
 					arg = argList[i]
 				}
 				def mm = handleExpectOptionalBooleanArg(arg, i, result, openOptionStr, msgs)
-				i = mm[(tag_new_i)]
-				state = mm[(tag_new_state)]
+				i = mm[TagB.new_i]
+				state = mm[TagB.new_state]
 			}
 			else {
 				cannotHappen("Unhandled state ${state} -- program fix needed")
@@ -151,7 +154,7 @@ class ArgsProcessor {
 		}
 		assert result != null
 		assert tailValues != null
-		return [ (tag_result) : result, (tag_tailvalues): tailValues ]
+		return [ (TagA.result) : result, (TagA.tailvalues): tailValues ]
 	}
 
 	/**
@@ -188,7 +191,8 @@ class ArgsProcessor {
 				OPTION_PROCEDURE,
 				OPTION_CREDS,
 				OPTION_CASEID,
-				OPTION_CASEFILE
+				OPTION_CASEFILE,
+				OPTION_WSDLFILE
 			]) {
 				openOptionStr = argTxt
 				state = State.EXPECT_ONE_ARG
@@ -225,9 +229,9 @@ class ArgsProcessor {
 			cannotHappen("Unhandled class ${arg.getClass().getName()} -- program fix needed")
 		}
 		return [
-			(tag_new_state) : state,
-			(tag_new_i) : i ,
-			(tag_openoptionstr) : openOptionStr
+			(TagB.new_state) : state,
+			(TagB.new_i) : i ,
+			(TagB.openoptionstr) : openOptionStr
 		]
 	}
 
@@ -271,7 +275,9 @@ class ArgsProcessor {
 				}
 				else if (optionStr == OPTION_SERVICE) {
 					// possibly override an existing value (if this is a name, otherwise exception)
-					result[OPTION_SERVICE] = AtwsMap.makeName(argTxt)
+					// this may not be an actual service, so just take the string, do not call
+					// AtwsMap.makeName(argTxt) yet
+					result[OPTION_SERVICE] = argTxt
 				}
 				else if (optionStr == OPTION_PROCEDURE) {
 					// possibly override an existing value (if this is a name, otherwise exception)
@@ -288,6 +294,10 @@ class ArgsProcessor {
 				else if (optionStr == OPTION_CASEFILE) {
 					// indicates a "case file"; do not do anything with this string as we may not need it
 					result[OPTION_CASEFILE] = argTxt
+				}
+				else if (optionStr == OPTION_WSDLFILE) {
+					// indicates a "wsdl file"; do not do anything with this string as we may not need it
+					result[OPTION_WSDLFILE] = argTxt
 				}
 				else {
 					cannotHappen("Unhandled case '${optionStr}' -- need a program fix");
@@ -306,8 +316,8 @@ class ArgsProcessor {
 			cannotHappen("Unhandled class ${arg.getClass().getName()} -- need a program fix")
 		}
 		return [
-			(tag_new_state) : state,
-			(tag_new_i) : i
+			(TagB.new_state) : state,
+			(TagB.new_i) : i
 		]
 	}
 
@@ -317,8 +327,9 @@ class ArgsProcessor {
 
 	static handleExpectOptionalBooleanArg(Capsule arg, int i, Map result, String optionStr, List msgs) {
 		def state
-		if (arg == null || arg in Option) {
+		if (arg == null || arg in Option || (arg in Value && arg.txt == '')) {
 			// seems that no value was given; assume YES
+			// note that we capture the very special case of a Value that is the empty string
 			result[optionStr]=true
 			state = State.FRESH
 			i++
@@ -341,8 +352,8 @@ class ArgsProcessor {
 			cannotHappen("Unhandled type ${arg.getClass().getName()} -- need a program fix")
 		}
 		return [
-			(tag_new_state) : state,
-			(tag_new_i) : i
+			(TagB.new_state) : state,
+			(TagB.new_i) : i
 		]
 	}
 }

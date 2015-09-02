@@ -2,37 +2,35 @@ package eu.qleap.soapyatc;
 
 import static name.heavycarbon.checks.BasicChecks.*
 
-import java.util.List;
+import java.nio.file.Paths;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.namespace.QName
 
-import name.heavycarbon.utils.ResourceHelpGroovy;
+import name.heavycarbon.utils.AbstractName;
+import name.heavycarbon.utils.ResourceHelpGroovy
+import name.heavycarbon.utils.Sleep;
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.slf4j.bridge.SLF4JBridgeHandler
 
-import uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J;
+import uk.org.lidalia.sysoutslf4j.context.SysOutOverSLF4J
 import v3.res.soap.webservice.alarmtilt.com.AlarmTILTRestrictedWebService
 import v3.res.soap.webservice.alarmtilt.com.AuthParam
 import v3.res.soap.webservice.alarmtilt.com.AuthType
-import v3.res.soap.webservice.alarmtilt.com.ContactUser;
 import v3.res.soap.webservice.alarmtilt.com.LaunchProcedureParam
 import v3.res.soap.webservice.alarmtilt.com.LaunchProcedureResult
 import v3.res.soap.webservice.alarmtilt.com.LaunchProcedureResultEnum
 import v3.res.soap.webservice.alarmtilt.com.PingServiceResult
 import v3.res.soap.webservice.alarmtilt.com.PingServiceResultEnum
-import v3.res.soap.webservice.alarmtilt.com.ProcedureVariable;
-import v3.res.soap.webservice.alarmtilt.com.Step;
+import v3.res.soap.webservice.alarmtilt.com.ProcedureVariable
 import v3.res.soap.webservice.alarmtilt.com.WsResV3
 import eu.qleap.soapyatc.argproc.ArgsProcessor
-import eu.qleap.soapyatc.argproc.CaseFile;
-import eu.qleap.soapyatc.argproc.CaseFile;
+import eu.qleap.soapyatc.argproc.CaseFile
 import eu.qleap.soapyatc.config.ConfigInfo
-import eu.qleap.soapyatc.config.Credentials;
+import eu.qleap.soapyatc.config.Credentials
 import eu.qleap.soapyatc.elements.AtpMap
-import eu.qleap.soapyatc.elements.AtpName;
+import eu.qleap.soapyatc.elements.AtpName
 import eu.qleap.soapyatc.elements.AtwsMap
 import eu.qleap.soapyatc.elements.AtwsName
 
@@ -51,8 +49,11 @@ import eu.qleap.soapyatc.elements.AtwsName
  * It turns out that having the "?wsdl" atom at the far end makes no difference to the behaviour
  * 
  * tcpdump the connection using:
+ * 
  * tcpdump -n -nn -s0 -A -i lo 'tcp port 80'
+ * 
  * Here is the exchange on port 80
+ * 
  * When tunneling over another server, the local tunneled port (80) and the final destination port (80) 
  * must correspond
  * 
@@ -70,246 +71,87 @@ public final class Call {
 
 	private static final String CLASS = Call.class.name
 	private static final Logger LOGGER_main                   = LoggerFactory.getLogger("${CLASS}.main")
-	private static final Logger LOGGER_processArgs            = LoggerFactory.getLogger("${CLASS}.processArgs")
-	private static final Logger LOGGER_mergeConfigs           = LoggerFactory.getLogger("${CLASS}.mergeConfigs")
-	private static final Logger LOGGER_alignConfigsByPriority = LoggerFactory.getLogger("${CLASS}.alignConfigByPriority")
-	private static final Logger LOGGER_readConfigs            = LoggerFactory.getLogger("${CLASS}.readConfigs")
-	private static final Logger LOGGER_precheck               = LoggerFactory.getLogger("${CLASS}.precheck")
+	private static final Logger LOGGER_selectWsdlLocationURI  = LoggerFactory.getLogger("${CLASS}.selectWsdlLocationURI")
 	private static final Logger LOGGER_ping                   = LoggerFactory.getLogger("${CLASS}.ping")
 	private static final Logger LOGGER_launch                 = LoggerFactory.getLogger("${CLASS}.launch")
 	private static final Logger LOGGER_realMain               = LoggerFactory.getLogger("${CLASS}.realMain")
-	private static final Logger LOGGER_whatToCall             = LoggerFactory.getLogger("${CLASS}.whatToCall")
+	private static final Logger LOGGER_callBasedOnCaseId      = LoggerFactory.getLogger("${CLASS}.callBasedOnCaseId")
+	private static final Logger LOGGER_callBasedOnNames       = LoggerFactory.getLogger("${CLASS}.callBasedOnNames")
 
-	private static final String tag_result            = 'tag_result'
-	private static final String tag_msgs              = 'tag_msgs'
-	private static final String tag_tailvalues        = 'tag_tailvalues'
-	private static final String tag_servicetocall     = 'tag_servicetocall'
-	private static final String tag_proceduretolaunch = 'tag_proceduretolaunch'
+	enum TagA {
+		servicetocall, proceduretolaunch
+	}
 
-	private static final String DO_THIS = "Configure in config file or on command line. Try '--help' on the command line for hints."
+	/**
+	 * Service codes: Some of these are only valid on the command line, some are invokable AlarmTILT services
+	 */
 
-	private static final AtwsName PING   = AtwsMap.makeName('ping')
-	private static final AtwsName LAUNCH = AtwsMap.makeName('launch')
+	private static final String stc_ping   = AtwsMap.makeName('ping') as String
+	private static final String stc_ping10 = AbstractName.namify('ping10')
+	private static final String stc_launch = AtwsMap.makeName('launch') as String
 
 	static final String NAMESPACE = 'com.alarmtilt.webservice.soap.res.v3'
-	static final String LOCAL_PART = 'ws-res-v3'
-	static final QName SERVICE_NAME = new QName(NAMESPACE, LOCAL_PART)
+	static final QName SERVICE_NAME_HTTP = new QName(NAMESPACE, 'ws-res-v3')
+	static final QName SERVICE_NAME_HTTPS = new QName(NAMESPACE, 'ws-res-v3-secured')
+
+	/**
+	 * The default config is checked but it doesn't exist on the classpath to avoid confusion 
+	 */
 
 	static final String DEFAULT_CONFIG = '^' + ResourceHelpGroovy.fullyQualifyResourceName(Call.class,'default_config.txt')
+
+	/**
+	 * Other
+	 */
+
+	private static final String DO_THIS = "Configure in config file or on command line. Try '--help' on the command line for hints."
 
 	/**
 	 * Non-instantiable constructor
 	 */
 
 	private Call() {
-		cannotHappen("Class cannot be instantiated");
+		cannotHappen("Do not instantiate ${Call.class.getName()}")
 	}
 
-	/**
-	 * Generate help text for the command line
-	 */
-
-	private static List generateHelpText() {
-		// 34567890123456789012345678901234567890123456789012345678901234567890123456789
-		List res = []
-		res << "--config=CONFIG        : Read configuration from CONFIG. CONFIG can be:"
-		res << "                         - Absolute pathname to a file. CONFIG must"
-		res << "                           start with '/' or '\\' or a DOS-style drive"
-		res << "                           letter (A:\\),"
-		res << "                         - Resource on the classpath. CONFIG must start"
-		res << "                           with the caret '^',"
-		res << "                         - Relative patname of a file (relative to the"
-		res << "                           home directory of the current user) in all"
-		res << "                           other cases,"
-		res << "                         - If not given, uses ${DEFAULT_CONFIG}."
-		res << "                         Several 'config' may be given. Later ones"
-		res << "                         override earlier ones (useful for having"
-		res << "                         credentials in separate files for example)"
-		res << "                         If needed, specify encoding of the config file"
-		res << "                         by appending '::UTF-8' for example"
-		res << "--url=URL              : An URL to the WSDL resource"
-		res << "                         You may give two: one for the 'http' scheme,"
-		res << "                         one for the 'https' scheme."
-		res << "--secure[=Y/N]         : Preferentially select 'https' scheme if"
-		res << "                         available. Default is YES."
-		res << "--hostnameverify[=Y/N] : Switch SSL hostname verification on/off."
-		res << "                         Default is YES."
-		res << "--service=SERVICE      : Give name of the remote web service to call."
-		res << "                         This is a case-insensitive string id, not the"
-		res << "                         actual service name."
-		res << "--procedure=PROCEDURE  : If the 'service' chosen is 'launch', give the"
-		res << "                         name of the AlarmTILT alerting procedure to"
-		res << "                         launch."
-		res << "                         This is a case-insensitive string id, not the"
-		res << "                         actual procedure name."
-		res << "--creds=CREDS          : Use credentials string CRED, which must be of"
-		res << "                         the form 'USER::PASSWORD'"
-		res << "--case=NUMERIC_CASE_ID : The numeric id from WinCC is passed in."
-		res << "                         Giving this overrides 'service' and 'procedure'"
-		res << "                         to predefined values."
-		res << "--casefile=CASEFILE    : Contains the mapping between NUMERIC_CASE_ID"
-		res << "                         and name of procedure to lauch. Must be given"
-		res << "                         if '--case' is used; same format as for CONFIG."
-		res << "\n"
-		res << "Known SERVICE names are:"
-		res << "\n"
-		res.addAll(AtwsMap.printOut())
-		res << "\n"
-		res << "Known PROCEDURE names are:"
-		res << "\n"
-		res.addAll(AtpMap.printOut())
-		return res
-	}
-
-	private static List readConfigs(List configNames) {
-		Logger logger = LOGGER_readConfigs
-		checkNotNull(configNames)
-		final boolean lenient = true
-		List res = []
-		configNames.each { String what ->
-			try {
-				List msgs = []
-				res << new ConfigInfo(what, msgs, lenient)
-				msgs.each {
-					logger.warn("${it}")
-				}
-			}
-			catch (Exception exe) {
-				// do not print the whole stacktrace....
-				logger.warn("Failure reading config '${what}'. Message: ${exe.message}")
-			}
-		}
-		return res
-	}
-
-	private static List alignConfigsByPriority(Map argResult) {
-		Logger logger = LOGGER_alignConfigsByPriority
-		//
-		// Read configuration by priority
-		//
-		List readThese = [DEFAULT_CONFIG]
-		if (argResult[ArgsProcessor.OPTION_CONFIG]) {
-			readThese.addAll(argResult[ArgsProcessor.OPTION_CONFIG])
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("The following configuration will be read in order: ${readThese}")
-		}
-		//
-		// Align ConfigInfo instances by priority
-		// 1) Default 2) Those read in 3) The one built from the command line
-		//
-		List configList = [new ConfigInfo()]
-		configList.addAll(readConfigs(readThese))
-		configList << new
-				ConfigInfo(
-				argResult[ArgsProcessor.OPTION_URL],
-				argResult[ArgsProcessor.OPTION_SECURE],
-				argResult[ArgsProcessor.OPTION_HNV],
-				argResult[ArgsProcessor.OPTION_SERVICE],
-				argResult[ArgsProcessor.OPTION_PROCEDURE],
-				argResult[ArgsProcessor.OPTION_CREDS],
-				argResult[ArgsProcessor.OPTION_CASEID],
-				argResult[ArgsProcessor.OPTION_CASEFILE])
-		if (logger.isDebugEnabled()) {
-			configList.each { ConfigInfo ci -> logger.debug("${ci}") }
-		}
-		return configList
-	}
-
-	private static Map processArgs(String[] args) {
-		Logger logger = LOGGER_processArgs
-		List msgs = []
-		Map mm          = ArgsProcessor.process(args, msgs)
-		Map result      = mm[ArgsProcessor.tag_result]
-		List tailValues = mm[ArgsProcessor.tag_tailvalues]
-		assert result != null
-		assert tailValues != null
-		//
-		// If there is anything in "msgs" or "tail values", caller will exit!
-		//
-		if (msgs) {
-			msgs.each { logger.error("Message from cmdline arg processing: ${it}") }
-		}
-		if (tailValues) {
-			tailValues.each { logger.error("Unused tail value in arguments: '${it.txt}'") }
-		}
-		if (logger.isDebugEnabled()) {
-			result.each { k, v -> logger.debug("Command line argument: ${k} --> ${v}") }
-			tailValues.each { logger.debug("Command line tail value: '${it.txt}'") }
-		}
-		return [ (tag_result) : result, (tag_msgs) : msgs, (tag_tailvalues) : tailValues ]
-	}
-
-	private static ConfigInfo mergeConfigs(List configList) {
-		Logger logger = LOGGER_mergeConfigs
-		checkNotNullAndNotEmpty(configList)
-		ConfigInfo current = configList[0]
-		for (int i=1; i< configList.size(); i++) {
-			ConfigInfo highPrio = configList[i]
-			current = new ConfigInfo(highPrio, current)
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("Resulting merged configuration: ${current}")
-		}
-		return current
-	}
-
-	private static URI precheck(ConfigInfo ci) {
-		Logger logger = LOGGER_precheck
+	private static URI selectWsdlLocationURI(ConfigInfo ci) {
+		Logger logger = LOGGER_selectWsdlLocationURI
 		String error
-		//
-		// In case of tests, we may want to not check the hostname in the X509 certificate
-		//
-		if (!ci.hostnameverify) {
-			logger.warn("ATTENTION: Disabling X509 certificate hostname verifier")
-			Helper.disableHostnameVerifier()
-		}
-		//
-		// Select the secure or non-secure URI; it will be returned
-		//
 		URI uri
-		if (ci.secure && ci.uriMap['https']) {
+		if (ci.secure) {
+			// if "secure", the https scheme MUST be used; no fallback to http!
+			// if there is no entry under 'https', we will throw!
 			uri = ci.uriMap['https']
 		}
 		else {
+			// not secure? use http, then
 			uri = ci.uriMap['http']
 		}
 		if (!uri) {
 			logger.error("No valid URI configured! Secure was: ${ci.secure}\n${DO_THIS}\n...exiting!")
 			error = "No valid URI configured"
 		}
-		//
-		// Unceremonously exit on error
-		//		
 		if (error) {
 			instaFail("Exiting due to unfixable problem: ${error}")
 		}
 		return uri
-		
-		//
-		// TODO Currently the whole WSDL is downloaded.
-		// We really don't want that!
-		// Consult: http://stackoverflow.com/questions/764772/jax-ws-loading-wsdl-from-jar
-		// The URL has to point to the WSDL, but then how to select https ?
-		//
 	}
 
 	private static boolean ping(URI uri,AlarmTILTRestrictedWebService port) {
 		Logger logger = LOGGER_ping
 		checkNotNull(uri)
 		checkNotNull(port)
+		AtwsName PING = AtwsMap.makeName(stc_ping)
 		String rawName = AtwsMap.getRawName(PING)
 		logger.info("Invoking service '${rawName}' at ${uri}");
 		try {
 			PingServiceResult res = port.pingService();
 			if (res.result == PingServiceResultEnum.OK) {
-				logger.info(res.result as String)
-				logger.info("Looking good - received OK")
+				logger.info("Looking good -- received ${res.result}")
 				return true
 			}
 			else {
-				logger.error(res.result as String)
-				logger.error("Something went wrong")
+				logger.error("Something went wrong -- received ${res.result}")
 				return false
 			}
 		} catch (Exception exe) {
@@ -324,44 +166,39 @@ public final class Call {
 		checkNotNull(port,"port")
 		checkNotNull(creds,"credentials")
 		checkNotNull(procedureToLaunch,"procedure to launch")
+		AtwsName LAUNCH = AtwsMap.makeName(stc_launch)
 		String rawWebServiceName = AtwsMap.getRawName(LAUNCH)
 		String rawProcedureName = AtpMap.getRawName(procedureToLaunch)
 		logger.info("Invoking service '${rawWebServiceName}' with procedure '${rawProcedureName}' at ${uri}");
-
 		//
 		// Filling in credentials
 		//
-
 		AuthParam auth = new AuthParam()
 		auth.authDn = creds.username
 		auth.authPw = creds.password
 		auth.authType = AuthType.BASIC
-
 		//
 		// There is a procedure called "Alerte WinCC" with a variable called "Defaut" which has to be filled with the
 		// "procedure to launch", i.e. "ASA", "Cargolux" etc.
 		// Fomerly, there were N "procedures to launch"
+		// This is indeed spelled: 'Defaut' (probably from the french: Défaut, which does
+		// NOT carry the meaning of "default" though: http://www.cnrtl.fr/lexicographie/d%C3%A9faut)
 		//
-
 		LaunchProcedureParam p = new LaunchProcedureParam()
 		p.procedureName = "Alerte WinCC"
 		ProcedureVariable pv = new ProcedureVariable()
 		pv.name = 'Defaut'
 		pv.value = rawProcedureName
-
 		// p.getVariables() returns a list that is created on need, so just "get()", then "add()"
 		p.getVariables().add(pv)
-
 		try {
 			LaunchProcedureResult res = port.launchProcedure(auth, p);
 			if (res.result == LaunchProcedureResultEnum.OK) {
-				logger.info(res.result as String)
-				logger.info("Looking good - received OK")
+				logger.info("Looking good -- received ${res.result}")
 				return true
 			}
 			else {
-				logger.error(res.result as String)
-				logger.error("Something went wrong")
+				logger.error("Something went wrong -- received ${res.result}")
 				return false
 			}
 		} catch (Exception exe) {
@@ -370,105 +207,214 @@ public final class Call {
 		}
 	}
 
-	private static Map whatToCall(ConfigInfo ci) {
-		Logger logger = LOGGER_whatToCall
-		AtwsName serviceToCall
+	private static Map callBasedOnCaseId(ConfigInfo ci) {
+		Logger logger = LOGGER_callBasedOnCaseId
+		List msgs = []
+		logger.info("A case id ${ci.caseId} has been given; looking up translation in a case file...")
+		String caseFile = ci.casefile
+		if (!caseFile) {
+			instaFail("Need to have a 'casefile' because the 'case' ${ci.caseId} is indicated, but no file has been given.\n${DO_THIS}")
+		}
+		// load the "case file"; will throw on problem
+		CaseFile cf = new CaseFile(ci.casefile, msgs)
+		msgs.each { it -> logger.warn("${it}") }
+		//
+		// service to call is always LAUNCH
+		//
+		String serviceToCall = stc_launch
+		//
+		// procedure to launch is looked up; will throw on problem
+		//
+		AtpName procedureToLaunch = cf.lookup(ci.caseId)
+		logger.info("The case id '${ci.caseId}' maps procedure '${procedureToLaunch}'; proceeding...")
+		return [ (TagA.servicetocall) : serviceToCall, (TagA.proceduretolaunch) : procedureToLaunch ]
+	}
+
+	private static Map callBasedOnNames(ConfigInfo ci) {
+		Logger logger = LOGGER_callBasedOnNames
+		String serviceToCall
 		AtpName  procedureToLaunch
-		if (ci.caseId != null) {
-			List msgs = []
-			logger.info("A case id ${ci.caseId} has been given; looking up translation in a case file...")
-			String caseFile = ci.casefile
-			if (!caseFile) {
-				instaFail("Need to have a 'casefile' because the 'case' ${ci.caseId} is indicated, but no file has been given. ${DO_THIS}")
-			}
-			// load the "case file"; will throw on problem
-			CaseFile cf = new CaseFile(ci.casefile, msgs)
-			msgs.each { it -> logger.warn("${it}") }
-			serviceToCall     = LAUNCH // force to LAUNCH
-			procedureToLaunch = cf.lookup(ci.caseId) // will throw on problem
-			logger.info("The case id '${ci.caseId}' maps procedure '${procedureToLaunch}'; proceeding...")
+		//
+		// The raw "service" string given on the command line is mapped to an AtwsName, if possible
+		//
+		AtwsName name = AtwsMap.makeNameWithNullOnFailure(ci.service)
+		if (name) {
+			serviceToCall = name as String
 		}
 		else {
-			serviceToCall = ci.service
-			checkNotNull(serviceToCall,"No service to call has been given")
-			if (serviceToCall == LAUNCH) {
-				procedureToLaunch = ci.procedure
-				checkNotNull(ci.procedure, "The service-to-call is ${serviceToCall} but the procedure to launch has not been given. ${DO_THIS}")
-			}
-			else {
-				// serviceToCall should be PING but in the future may be something else
-				if (ci.procedure != null) {
-					logger.warn("The service-to-call is ${serviceToCall} -- disregarding unneeded procedure to launch ${ci.procedure}")
-				}
+			serviceToCall = AbstractName.namifyWithNullOnFailure(ci.service)
+		}
+		checkNotNull(serviceToCall,"No valid service to call has been given (actual value given was ${ci.service})")
+
+		if (serviceToCall == stc_launch) {
+			procedureToLaunch = ci.procedure
+			checkNotNull(ci.procedure, "The service-to-call is '${serviceToCall}' but the procedure to launch has not been given.\n${DO_THIS}")
+		}
+		else {
+			if (ci.procedure) {
+				logger.warn("The service-to-call is '${serviceToCall}' -- disregarding unneeded procedure '${ci.procedure}'")
 			}
 		}
-		return [ (tag_servicetocall) : serviceToCall, (tag_proceduretolaunch) : procedureToLaunch ]
+		return [ (TagA.servicetocall) : serviceToCall, (TagA.proceduretolaunch) : procedureToLaunch ]
+	}
+
+	private static Map whatToCall(ConfigInfo ci) {
+		if (ci.caseId != null) {
+			return callBasedOnCaseId(ci)
+		}
+		else {
+			return callBasedOnNames(ci)
+		}
+	}
+
+	private static boolean pingTenTimes(URI uri,AlarmTILTRestrictedWebService port) {
+		boolean res = true
+		int counter = 10
+		boolean first = true
+		final int sleep_ms = 1000
+		while (res && counter > 0) {
+			if (!first) {
+				Sleep.sleepFor(sleep_ms)
+			}
+			else {
+				first = false
+			}
+			res = ping(uri,port)
+			counter--
+		}
 	}
 
 	private static boolean realMain(String[] args) {
 		Logger logger = LOGGER_realMain
-		Map  argResult
-		List pargsMsgs
-		List tailValues
-		PARGS: {
-			Map res     = processArgs(args)
-			argResult   = res[tag_result]
-			pargsMsgs   = res[tag_msgs]
-			tailValues  = res[tag_tailvalues]
-			assert argResult  != null
-			assert pargsMsgs  != null
-			assert tailValues != null
+		//
+		// Build a single common "ConfigInfo" by merging those created from config files and the command line
+		//
+		ConfigInfo ci
+		BUILD_CONFIGINFO: {
+			def argResult = ArgumentProcessing.makeArgResult(args)
+			def configList = ArgumentProcessing.alignConfigsByPriority(argResult)
+			ci = ArgumentProcessing.mergeConfigs(configList)
 		}
 		//
-		// tail values containing only whitespace are skipped
+		// In case of tests, we may want to not check the hostname in the X509 certificate
 		//
-		tailValues = tailValues.findAll { !it.txt.trim().isEmpty() }
+		if (!ci.hostnameverify) {
+			logger.warn("ATTENTION: Disabling X509 certificate hostname verifier")
+			Helper.disableHostnameVerifier()
+		}
 		//
-		// If help demanded or an error occurred during command-line processing, print and exit
+		// Now we need to suss out the location of the WSDL file and the actual service to use
 		//
-		if (argResult[ArgsProcessor.OPTION_HELP] || !tailValues.isEmpty() || !pargsMsgs.isEmpty()) {
-			generateHelpText().each {
-				System.err.println(it)
+		URI wsdlLocationUri
+		WsResV3 wsService
+		//
+		// Case: "wsdlfile" is NOT given
+		//
+		if (!ci.wsdlfile) {
+			//
+			// We don't know an on-disk location for the WSDL file. We shall get the WSDL file
+			// from the target server instead by letting "wsdlLocationUrl" point to that server.
+			// That URL should terminate in an "?wsdl" fragment, though empirically it works
+			// without, too.
+			//
+			// Using this will cause JAX-WS to behave as follows:
+			//
+			// 1) GET the WSDL from the "wsdlLocationUrl" via HTTP or HTTPS, as specified in the
+			//    URL, on a first connection.
+			//
+			// 2) POST the webservice request to the remote server via HTTP or HTTPS, according
+			//    to the scheme used in the "wsdlLocationUrl", on a second connection.
+			//
+			// This actually works even if there is only a HTTP service endpoint indicated in the
+			// WSDL. Interesting.
+			//
+			// We use what is given as 'urls' from the command line or from the config file and
+			// use the 'secure' flag appropriately. This will throw if no good URI could be found.
+			//
+			wsdlLocationUri = selectWsdlLocationURI(ci)
+			//
+			// Always use "SERVICE_NAME_HTTP" because that is the only one configured in the
+			// AlarmTILT WSDL :-(  ... but this works!
+			//
+			wsService = new WsResV3(wsdlLocationUri.toURL(), SERVICE_NAME_HTTP)
+		}
+		else {
+			//
+			// We do know an on-disk location for the WSDL file. We shall read it from there.
+			// JAX-WS expects an URL and we have not installed an URL handler for a scheme like
+			// "resource:", so it must be a honest-to-god file for now.
+			//
+			// Using this will cause JAX-WS to behave as follows:
+			//
+			// 1) NOT GET the WSDL from the remote server.
+			//
+			// 2) POST the webservice request to the remote server via HTTP and HTTPS, as selected,
+			//    on a first connection.
+			//
+			// Using HTTP or HTTPS alternatingly demands the that the WSDL properly specify a HTTP
+			// and a HTTPS endpoint.
+			//
+			// Currently, this means manually editing the AlarmTILT WSDL:
+			//
+			// If the file is missing there will be an exception at connect() time from
+			// sun.net.www.protocol.file.FileURLConnection.connect
+			//
+			wsdlLocationUri = Paths.get(ci.wsdlfile).toUri()
+			//
+			// The WSDL must list two services, one going via http and one going via https:
+			// The WSDL of AlarmTILT only lists the http location, so this must be manually added
+			//
+			// <wsdl:service name="ws-res-v3">
+			//    <wsdl:port binding="tns:ws-res-v3SoapBinding" name="AlarmTILTRestrictedWebServicePort">
+			//       <soap:address location="http://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService"/>
+			//    </wsdl:port>
+			// </wsdl:service>
+			// <wsdl:service name="ws-res-v3-secured">
+			//    <wsdl:port binding="tns:ws-res-v3SoapBinding" name="AlarmTILTRestrictedWebServicePort">
+			//       <soap:address location="https://v5-webservices.alarmtilt.net/atsrv-ejb/ws-res-v3/AlarmTILTRestrictedWebService"/>
+			//    </wsdl:port>
+			// </wsdl:service>
+			//
+			if (ci.secure) {
+				wsService = new WsResV3(wsdlLocationUri.toURL(), SERVICE_NAME_HTTPS)
 			}
-			System.err.flush()
-			System.exit(0)
+			else {
+				wsService = new WsResV3(wsdlLocationUri.toURL(), SERVICE_NAME_HTTP)
+			}
 		}
-		//
-		// Build a single common configInfo by merging the other according to fixed priority
-		//
-		ConfigInfo ci = mergeConfigs(alignConfigsByPriority(argResult))
+		AlarmTILTRestrictedWebService port = wsService.getAlarmTILTRestrictedWebServicePort()
 		//
 		// Prepare for call; in particular if "case id" is set, invoke a launch of procedure
 		//
-		URI uri = precheck(ci)
-		WsResV3 wsService = new WsResV3(uri.toURL(), SERVICE_NAME)
-		AlarmTILTRestrictedWebService port = wsService.getAlarmTILTRestrictedWebServicePort()
-		AtwsName serviceToCall
+		String   serviceToCall
 		AtpName  procedureToLaunch
-		WTC: {
-			Map wtc = whatToCall(ci)
-			serviceToCall     = wtc[tag_servicetocall]
-			procedureToLaunch = wtc[tag_proceduretolaunch]
+		WHAT_TO_CALL: {
+			Map wtc           = whatToCall(ci)
+			serviceToCall     = wtc[TagA.servicetocall]
+			procedureToLaunch = wtc[TagA.proceduretolaunch]
+			logger.debug("serviceToCall = ${serviceToCall}, procedureToLaunch = ${procedureToLaunch}")
 		}
-		logger.debug("serviceToCall = ${serviceToCall}, procedureToLaunch = ${procedureToLaunch}")
 		//
-		// The network stack writes debug info to STDOUT instead of to JUL. Oracle, please.
-		// Let's capture it into SLF4J
+		// The network stack writes debug info to STDOUT instead of to JUL. Oracle, please!
+		// Let's capture it into SLF4J then. We do this here to do it as late as possible.
 		//
 		SysOutOverSLF4J.sendSystemOutAndErrToSLF4J();
 		//
-		// We seem to be read to either ping the AlarmTILT server or launch a procedure on it
+		// Ready to either ping the AlarmTILT server or launch a procedure on it
 		//
 		boolean res
 		switch (serviceToCall) {
-			case PING:
-				res = ping(uri,port)
+			case stc_ping:
+				res = ping(wsdlLocationUri,port)
 				break
-			case LAUNCH:
-				res = launch(uri,port,ci.credentials, procedureToLaunch)
+			case stc_ping10:
+				res = pingTenTimes(wsdlLocationUri,port)
+				break
+			case stc_launch:
+				res = launch(wsdlLocationUri,port,ci.credentials, procedureToLaunch)
 				break
 			default:
-				logger.error("Unknown web service '${ci.service}' requested")
+				logger.error("Unknown (web) service '${serviceToCall}' (originally ${ci.service}) requested -- fix code!")
 				res = false
 		}
 		return res
