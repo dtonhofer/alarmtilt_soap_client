@@ -211,8 +211,8 @@ class ArgumentProcessing {
 		Logger logger = LOGGER_processArgs
 		List msgs = []
 		Map mm          = ArgsProcessor.process(args, msgs)
-		Map result      = mm[ArgsProcessor.tag_result]
-		List tailValues = mm[ArgsProcessor.tag_tailvalues]
+		Map result      = mm[ArgsProcessor.TagA.result]
+		List tailValues = mm[ArgsProcessor.TagA.tailvalues]
 		assert result != null
 		assert tailValues != null
 		//
