@@ -26,6 +26,10 @@ java.exe
    --case 1
 ```
 
+The invocation in the running setup is a multistep process:
+
+![Invocation](https://github.com/Q-LEAP/alarmtilt_soap_client/blob/master/doc/AlarmTILT_principle.yed.png)
+
 + Consult what `--help` says:
 
 ```
