@@ -11,8 +11,13 @@ Deployment should really be done using a Gradle or Maven build file, but for now
 
 ## Notes
 
-+ Runs on Oracle JDK 8 (u51), and uses Groovy 2.4.
-+ Is invoked from WinCC via an ANSI C script, but you can also run it from the command line, for example:
+Runs on Oracle JDK 8 (u51), and uses Groovy 2.4.
+
+Is invoked from SIMATEC WinCC via an ANSI C function in a multistep process:
+
+![Invocation](https://github.com/Q-LEAP/alarmtilt_soap_client/blob/master/doc/AlarmTILT_principle.yed.png)
+
+You can also run it from the command line, for example:
 
 ```
 java.exe 
@@ -25,10 +30,6 @@ java.exe
    --casefile D:\Global\alarmtilt\casefile.txt
    --case 1
 ```
-
-The invocation in the running setup is a multistep process:
-
-![Invocation](https://github.com/Q-LEAP/alarmtilt_soap_client/blob/master/doc/AlarmTILT_principle.yed.png)
 
 + Consult what `--help` says:
 
