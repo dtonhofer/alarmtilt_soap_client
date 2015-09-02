@@ -79,13 +79,13 @@ public final class Call {
 	private static final Logger LOGGER_launch                 = LoggerFactory.getLogger("${CLASS}.launch")
 	private static final Logger LOGGER_realMain               = LoggerFactory.getLogger("${CLASS}.realMain")
 	private static final Logger LOGGER_whatToCall             = LoggerFactory.getLogger("${CLASS}.whatToCall")
-	
+
 	private static final String tag_result            = 'tag_result'
 	private static final String tag_msgs              = 'tag_msgs'
 	private static final String tag_tailvalues        = 'tag_tailvalues'
 	private static final String tag_servicetocall     = 'tag_servicetocall'
 	private static final String tag_proceduretolaunch = 'tag_proceduretolaunch'
-	
+
 	private static final String DO_THIS = "Configure in config file or on command line. Try '--help' on the command line for hints."
 
 	private static final AtwsName PING   = AtwsMap.makeName('ping')
@@ -148,7 +148,7 @@ public final class Call {
 		res << "                         Giving this overrides 'service' and 'procedure'"
 		res << "                         to predefined values."
 		res << "--casefile=CASEFILE    : Contains the mapping between NUMERIC_CASE_ID"
-        res << "                         and name of procedure to lauch. Must be given"
+		res << "                         and name of procedure to lauch. Must be given"
 		res << "                         if '--case' is used; same format as for CONFIG."
 		res << "\n"
 		res << "Known SERVICE names are:"
@@ -256,11 +256,17 @@ public final class Call {
 
 	private static URI precheck(ConfigInfo ci) {
 		Logger logger = LOGGER_precheck
-		boolean error = false
+		String error
+		//
+		// In case of tests, we may want to not check the hostname in the X509 certificate
+		//
 		if (!ci.hostnameverify) {
-			logger.info("Disabling hostname verifier")
+			logger.warn("ATTENTION: Disabling X509 certificate hostname verifier")
 			Helper.disableHostnameVerifier()
 		}
+		//
+		// Select the secure or non-secure URI; it will be returned
+		//
 		URI uri
 		if (ci.secure && ci.uriMap['https']) {
 			uri = ci.uriMap['https']
@@ -269,13 +275,17 @@ public final class Call {
 			uri = ci.uriMap['http']
 		}
 		if (!uri) {
-			logger.error("No valid URI configured! Secure was: ${ci.secure}. ${DO_THIS}")
-			error = true
+			logger.error("No valid URI configured! Secure was: ${ci.secure}\n${DO_THIS}\n...exiting!")
+			error = "No valid URI configured"
 		}
+		//
+		// Unceremonously exit on error
+		//		
 		if (error) {
-			System.exit(1)
+			instaFail("Exiting due to unfixable problem: ${error}")
 		}
 		return uri
+		
 		//
 		// TODO Currently the whole WSDL is downloaded.
 		// We really don't want that!
@@ -288,7 +298,7 @@ public final class Call {
 		Logger logger = LOGGER_ping
 		checkNotNull(uri)
 		checkNotNull(port)
-		String rawName = AtwsMap.getRawName(PING) 
+		String rawName = AtwsMap.getRawName(PING)
 		logger.info("Invoking service '${rawName}' at ${uri}");
 		try {
 			PingServiceResult res = port.pingService();
@@ -338,7 +348,7 @@ public final class Call {
 		ProcedureVariable pv = new ProcedureVariable()
 		pv.name = 'Defaut'
 		pv.value = rawProcedureName
-		
+
 		// p.getVariables() returns a list that is created on need, so just "get()", then "add()"
 		p.getVariables().add(pv)
 
@@ -363,7 +373,7 @@ public final class Call {
 	private static Map whatToCall(ConfigInfo ci) {
 		Logger logger = LOGGER_whatToCall
 		AtwsName serviceToCall
-		AtpName  procedureToLaunch		
+		AtpName  procedureToLaunch
 		if (ci.caseId != null) {
 			List msgs = []
 			logger.info("A case id ${ci.caseId} has been given; looking up translation in a case file...")
@@ -371,7 +381,7 @@ public final class Call {
 			if (!caseFile) {
 				instaFail("Need to have a 'casefile' because the 'case' ${ci.caseId} is indicated, but no file has been given. ${DO_THIS}")
 			}
-			// load the "case file"; will throw on problem			
+			// load the "case file"; will throw on problem
 			CaseFile cf = new CaseFile(ci.casefile, msgs)
 			msgs.each { it -> logger.warn("${it}") }
 			serviceToCall     = LAUNCH // force to LAUNCH
@@ -394,21 +404,21 @@ public final class Call {
 		}
 		return [ (tag_servicetocall) : serviceToCall, (tag_proceduretolaunch) : procedureToLaunch ]
 	}
-	
+
 	private static boolean realMain(String[] args) {
 		Logger logger = LOGGER_realMain
 		Map  argResult
 		List pargsMsgs
 		List tailValues
 		PARGS: {
-			Map res     = processArgs(args)		
+			Map res     = processArgs(args)
 			argResult   = res[tag_result]
 			pargsMsgs   = res[tag_msgs]
 			tailValues  = res[tag_tailvalues]
 			assert argResult  != null
 			assert pargsMsgs  != null
 			assert tailValues != null
- 		}
+		}
 		//
 		// tail values containing only whitespace are skipped
 		//
@@ -428,7 +438,7 @@ public final class Call {
 		//
 		ConfigInfo ci = mergeConfigs(alignConfigsByPriority(argResult))
 		//
-		// Prepare for call; in particular if "case id" is set, invoke a launch of procedure 
+		// Prepare for call; in particular if "case id" is set, invoke a launch of procedure
 		//
 		URI uri = precheck(ci)
 		WsResV3 wsService = new WsResV3(uri.toURL(), SERVICE_NAME)
@@ -436,17 +446,19 @@ public final class Call {
 		AtwsName serviceToCall
 		AtpName  procedureToLaunch
 		WTC: {
-			Map wtc = whatToCall(ci)		
+			Map wtc = whatToCall(ci)
 			serviceToCall     = wtc[tag_servicetocall]
 			procedureToLaunch = wtc[tag_proceduretolaunch]
 		}
 		logger.debug("serviceToCall = ${serviceToCall}, procedureToLaunch = ${procedureToLaunch}")
 		//
-		// The network stack writes debug info to STDOUT!
-		// capture it
+		// The network stack writes debug info to STDOUT instead of to JUL. Oracle, please.
+		// Let's capture it into SLF4J
+		//
 		SysOutOverSLF4J.sendSystemOutAndErrToSLF4J();
-		
-		
+		//
+		// We seem to be read to either ping the AlarmTILT server or launch a procedure on it
+		//
 		boolean res
 		switch (serviceToCall) {
 			case PING:
@@ -465,22 +477,30 @@ public final class Call {
 	public static void main(String[] args) {
 		Logger logger = LOGGER_main
 		//
-		// Redirects Java Util Logging (JUL) into SLF4J, with some overhead
-		// This operation does not print anything
+		// Redirect Java Util Logging (JUL) into SLF4J, with some overhead.
+		// An additional installation to redirect messages writtent to STDOUT
+		// into SLF4J will be done once we know the user didn't just request "--help"
 		//
-		SLF4JBridgeHandler.install();		
-		logger.info("============== NEW INVOCATION ==============")
+		SLF4JBridgeHandler.install();
+		//
+		// Let's roll.
+		// No need to print a timestamp as the logger layout takes care of that
+		//
 		boolean res
 		try {
+			logger.info("============== NEW INVOCATION ==============")
 			res = realMain(args)
 		}
 		catch (Exception exe) {
-			logger.error("Caught Exception", exe)	
+			logger.error("Caught Exception", exe)
 			res = false
 		}
 		finally {
 			logger.info("============== TERMINATING with ${res} ==============")
 		}
+		//
+		// Properly exit with 0 = OK and 1 = BAD STUFF HAPPENED
+		//
 		if (!res) {
 			System.exit(1)
 		}

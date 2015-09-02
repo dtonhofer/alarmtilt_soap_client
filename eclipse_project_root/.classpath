@@ -5,13 +5,13 @@
 	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
 	<classpathentry exported="true" kind="con" path="GROOVY_DSL_SUPPORT"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/name.heavycarbon.checks/checks.jar" sourcepath="/xtern_third_party_jars/name.heavycarbon.checks/checks-src.jar"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/ch.qos.logback/logback-classic.jar"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/ch.qos.logback/logback-core.jar"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/jcl-over-slf4j.jar"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/jul-to-slf4j.jar"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/log4j-over-slf4j.jar"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/org.slf4j/slf4j-api.jar"/>
-	<classpathentry kind="lib" path="/xtern_third_party_jars/mahoney/sysout-over-slf4j-1.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/heavycarbon_checks.jar" sourcepath="lib/heavycarbon_checks-src.jar"/>
+	<classpathentry kind="lib" path="lib/jcl-over-slf4j.jar"/>
+	<classpathentry kind="lib" path="lib/jul-to-slf4j.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-over-slf4j.jar"/>
+	<classpathentry kind="lib" path="lib/logback-classic.jar"/>
+	<classpathentry kind="lib" path="lib/logback-core.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api.jar"/>
+	<classpathentry kind="lib" path="lib/sysout-over-slf4j-1.0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
