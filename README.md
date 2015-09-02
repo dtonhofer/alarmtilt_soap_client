@@ -31,7 +31,7 @@ java.exe
    --case 1
 ```
 
-+ Consult what `--help` says:
+## Consult what `--help` says:
 
 ```
 --config=CONFIG        : Read configuration from CONFIG. CONFIG can be:
