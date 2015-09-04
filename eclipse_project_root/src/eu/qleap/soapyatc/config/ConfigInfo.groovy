@@ -57,7 +57,7 @@ class ConfigInfo {
 		uriMap         = [:].asImmutable()
 		secure         = true // there is no reason to not use https by default
 		hostnameverify = true // there is no reason to not verify hostname by default
-		service        = AtwsMap.makeName('ping') // by default, just "ping" remote server
+		service        = AtwsMap.makeName('ping') as String // by default, just "ping" remote server
 		assert uriMap != null
 	}
 

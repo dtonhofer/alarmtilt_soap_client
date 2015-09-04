@@ -245,8 +245,8 @@ class ConfigInfoHelper {
 				res[(key)] = BooleanParser.makeBoolean(value)
 				break
 			case ConfigInfo.key_service:
-			// the next call throws if not found
-				res[(ConfigInfo.key_service)] = AtwsMap.makeName(value)
+			// we cannot yet filter here because any string may have been obtained
+				res[(ConfigInfo.key_service)] = value
 				break
 			case ConfigInfo.key_procedure:
 			// the next call throws if not found
