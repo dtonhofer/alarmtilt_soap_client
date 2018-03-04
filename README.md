@@ -7,7 +7,7 @@ License: [MIT License](http://opensource.org/licenses/MIT)
 
 Deployment should really be done using a Gradle or Maven build file, but for now, manual work is required:
 
-![Deployment organization](https://github.com/Q-LEAP/alarmtilt_soap_client/blob/master/doc/Organization.yed.png)
+![Deployment organization](https://github.com/dtonhofer/alarmtilt_soap_client/blob/master/doc/Organization.yed.png)
 
 ## Notes
 
@@ -15,7 +15,7 @@ Runs on Oracle JDK 8 (u51), and uses Groovy 2.4.
 
 Is invoked from SIMATEC WinCC via an ANSI C function in a multistep process:
 
-![Invocation](https://github.com/Q-LEAP/alarmtilt_soap_client/blob/master/doc/AlarmTILT_principle.yed.png)
+![Invocation](https://github.com/dtonhofer/alarmtilt_soap_client/blob/master/doc/AlarmTILT_principle.yed.png)
 
 You can also run it from the command line, for example:
 
