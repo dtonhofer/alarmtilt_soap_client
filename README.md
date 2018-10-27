@@ -1,7 +1,18 @@
 # alarmtilt_soap_client
-Framework code for the AlarmTILT SOAP Client
 
-For now performs only the "ping" and "launch" web service calls.
+## Status
+
+- Frozen in time and unmaintained!
+
+## What is it
+
+This is framework code for the "AlarmTILT" SOAP Client. AlarmTILT is an alerting and crisis management service
+developed by [AlarmTILT](https://www.alarmtilt.com/lu/), a company registered in Luxembourg. One would like 
+to connect to the AlarmTILT SOAP interface to launch an alerting procedure. This code was written for a 
+specific customer to do just that. A SIMATEC WinCC industrial management system calls this program if a
+problem is detected,
+
+For now the SOAP client only performs the "ping" and "launch" web service calls.
 
 License: [MIT License](http://opensource.org/licenses/MIT)
 
