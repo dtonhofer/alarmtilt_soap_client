@@ -1,12 +1,10 @@
 # alarmtilt_soap_client
 
-## Status
-
-- Frozen in time and unmaintained!
-
 ## What is it
 
-This is framework code for the "AlarmTILT" SOAP Client. AlarmTILT is an alerting and crisis management service
+This is framework code for the "AlarmTILT" SOAP Client. 
+
+AlarmTILT is an alerting and crisis management service
 developed by [AlarmTILT](https://www.alarmtilt.com/lu/), a company registered in Luxembourg. One would like 
 to connect to the AlarmTILT SOAP interface to launch an alerting procedure. This code was written for a 
 specific customer to do just that. A SIMATEC WinCC industrial management system calls this program if a
@@ -14,7 +12,17 @@ problem is detected,
 
 For now the SOAP client only performs the "ping" and "launch" web service calls.
 
-License: [MIT License](http://opensource.org/licenses/MIT)
+## Status
+
+   * Frozen in time.
+   * Unmaintained since 2015.
+   * Of historical interest.
+   
+## License
+
+The [MIT License](http://opensource.org/licenses/MIT)
+
+## How to deploy
 
 Deployment should really be done using a Gradle or Maven build file, but for now, manual work is required:
 
@@ -42,7 +50,9 @@ java.exe
    --case 1
 ```
 
-## Consult what `--help` says:
+## Usage
+
+Consult what `--help` says:
 
 ```
 --config=CONFIG        : Read configuration from CONFIG. CONFIG can be:
