@@ -22,6 +22,8 @@ For now the SOAP client only performs the "ping" and "launch" web service calls.
 
 The [MIT License](http://opensource.org/licenses/MIT)
 
+Copyright (c) 2015 q-leap s.a. 59 Boulevard Royal, L-2449 Luxembourg
+
 ## How to deploy
 
 Deployment should really be done using a Gradle or Maven build file, but for now, manual work is required:
