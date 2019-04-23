@@ -20,9 +20,12 @@ For now the SOAP client only performs the "ping" and "launch" web service calls.
    
 ## License
 
-The [MIT License](http://opensource.org/licenses/MIT)
+[MIT License](http://opensource.org/licenses/MIT) with copyright held by author's former employer.
 
-Copyright (c) 2015 q-leap s.a. 59 Boulevard Royal, L-2449 Luxembourg
+Copyright (c) 2015<br>
+q-leap s.a.<br>
+59 Boulevard Royal<br>
+L-2449 Luxembourg<br>
 
 ## How to deploy
 
